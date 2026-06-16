@@ -12,7 +12,7 @@ const SM=Object.fromEntries(SUBS.filter(s=>s.id!=='all').map(s=>[s.id,s]));
 let VID=[];
 
 const BKS=[
-  {id:'b1',s:'preop',t:'การเตรียมตัวก่อนผ่าตัด (Pre-op Prep)',a:'SurgCare Team',ch:4,c:'#1D9E75'},
+  {id:'b1',s:'preop',t:'การเตรียมตัวก่อนผ่าตัด (Pre-op Prep)',a:'Healthcare Academy',ch:4,c:'#1D9E75'},
   {id:'b2',s:'postop',t:'การดูแลแผลและฟื้นฟู (Post-op Care)',a:'Nursing Dept',ch:5,c:'#D85A30'},
   {id:'b3',s:'comm',t:'เทคนิคให้คำแนะนำผู้ป่วย',a:'Communication Unit',ch:3,c:'#BA7517'},
   {id:'b4',s:'intraop',t:'ความปลอดภัยในห้องผ่าตัด',a:'OR Team',ch:4,c:'#1B3A6B'},

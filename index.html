@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SurgCare Edu</title>
+<title>Healthcare Academy</title>
 <meta name="description" content="General Surgery Case Training สำหรับนักศึกษาแพทย์และแพทย์ฝึกหัด">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -87,13 +87,11 @@ textarea,input{font-family:var(--f)}
 @keyframes sUp{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
 @keyframes shk{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
 @keyframes fUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@keyframes scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 .ac{animation:sUp .4s ease}.aw{animation:shk .4s ease}
-.marquee{overflow:hidden;white-space:nowrap}.marquee-text{display:inline-block;animation:scroll 15s linear infinite}
 
 /* Description formatting */
-.desc-pre{white-space:pre-wrap;word-break:break-word;line-height:2;letter-spacing:.3px;color:#2c2c2c;font-size:15px;padding:24px;background:#fafafa;border-radius:16px;border:3px solid rgba(83,74,183,.5);box-shadow:0 4px 12px rgba(83,74,183,.12)}
-.desc-preview{white-space:pre-wrap;word-break:break-word;line-height:1.6;letter-spacing:.2px;color:var(--t2);font-size:14px;max-height:3.2em;overflow:hidden}
+.desc-pre{white-space:pre-wrap;word-break:break-word;line-height:1.7;color:var(--t2);font-size:14px}
+.desc-preview{white-space:pre-wrap;word-break:break-word;line-height:1.4;color:var(--t2);font-size:13px;max-height:3.2em;overflow:hidden}
 </style>
 </head>
 <body>
@@ -159,24 +157,6 @@ const save=()=>localStorage.setItem('lt_s',JSON.stringify(ST));
 function lvInfo(){
   const xpL=500,lv=Math.floor(ST.xp/xpL)+1,inL=ST.xp%xpL;
   return{lv,inL,tot:xpL,pct:inL/xpL*100};
-}
-
-// คำนวณเปอร์เซ็นต์ความคืบหน้าของหัวข้อ (รวมวิดีโอและหนังสือ)
-function subjectPct(sid){
-  // วิดีโอ
-  const vids = VID.filter(v=>v.s===sid);
-  const books = BKS.filter(b=>b.s===sid);
-  const parts = [];
-  if(vids.length){
-    const sum = vids.reduce((acc,v)=>acc + (ST.vp[v.id]||0),0);
-    parts.push(sum/vids.length);
-  }
-  if(books.length){
-    const sumb = books.reduce((acc,b)=>acc + ((ST.bp[b.id]||0)/b.ch*100),0);
-    parts.push(sumb/books.length);
-  }
-  if(!parts.length) return 0;
-  return Math.round(parts.reduce((a,c)=>a+c,0)/parts.length);
 }
 
 // ── GAMIFICATION ─────────────────────────────────────────
@@ -251,22 +231,17 @@ function renderHome(){
   const prog=lv_?(ST.vp[lv_?.id]||0):0;
 
   let cont=lv_?`
-  <div class="card" style="margin:0 20px 16px;padding:0;overflow:hidden;border:2px solid ${sub.c}40;box-shadow:0 4px 16px ${sub.c}20">
-    <div style="padding:16px;display:flex;align-items:center;gap:12px">
-      <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,${sub.c},${sub.c}AA);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;box-shadow:0 4px 12px ${sub.c}30">${sub.ic}</div>
+  <div class="card" style="margin:0 20px 16px;cursor:pointer" onclick="viewVid('${lv_.id}')">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="width:48px;height:48px;border-radius:12px;background:${sub.c};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${sub.ic}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:11px;color:${sub.c};font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px">${sub.n}</div>
-        <div style="font-size:15px;font-weight:800;color:var(--t1);height:20px" class="marquee"><span class="marquee-text">${lv_.t}</span></div>
+        <div style="font-size:12px;color:var(--t2);margin-bottom:3px">${sub.n} · วิดีโอ</div>
+        <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lv_.t}</div>
       </div>
     </div>
-    <div style="padding:0 16px 12px">
-      <div class="pt" style="height:6px;background:var(--bgi);border-radius:99px;overflow:hidden"><div class="pf" data-t="${prog}" style="background:${sub.c};border-radius:99px;height:100%"></div></div>
-      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--t2)">
-        <span>ความคืบหน้า</span><span style="color:${sub.c};font-weight:700">${prog}%</span>
-      </div>
-    </div>
-    <div style="padding:12px 16px;display:flex;gap:8px;border-top:1px solid ${sub.c}20">
-      <button onclick="sw('books');renderBooks()" style="flex:1;background:${sub.c};color:#fff;border:none;border-radius:10px;padding:12px;font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">🎯 เริ่มต้นเรียนรู้</button>
+    <div class="pt"><div class="pf" data-t="${prog}" style="background:${sub.c}"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--t2)">
+      <span>ความคืบหน้า</span><span style="color:${sub.c};font-weight:700">${prog}%</span>
     </div>
   </div>`
   :`<div class="card" style="margin:0 20px 16px;cursor:pointer;text-align:center;padding:24px" onclick="sw('videos')">
@@ -305,39 +280,40 @@ function renderHome(){
     </div>
 
     <div style="margin-top:-24px">
-      <div style="padding:0 20px 8px"><div style="font-size:12px;font-weight:700;color:var(--p);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">เกี่ยวกับแอป</div></div>
-      <div style="padding:0 20px 12px">
-        <div class="card" style="padding:14px;">
-          <div style="font-size:15px;font-weight:800;margin-bottom:8px">SurgCare Edu — แอปฝึกทักษะการดูแลผู้ป่วยผ่าตัด</div>
-          <div style="color:var(--t2);font-size:13px;line-height:1.6">
-            แอปนี้มีวัตถุประสงค์เพื่อให้ความรู้และฝึกทักษะที่เกี่ยวข้องกับการผ่าตัดและการดูแลผู้ป่วย ประกอบด้วยเนื้อหาในหัวข้อหลัก: <strong>${SUBS.filter(s=>s.id!=='all').map(s=>s.n).join(' · ')}</strong>.
-            <ul style="margin-top:8px;margin-left:18px;color:var(--t2);font-size:13px;line-height:1.5">
-              <li>รูปแบบการเรียน: วิดีโอแนะนำ, บทความ/หนังสือแยกบท, และแบบทดสอบประเมินความเข้าใจ</li>
-              <li>ฟีเจอร์การเรียนรู้: ติดตามความคืบหน้าเป็นเปอร์เซ็นต์, เก็บ XP และสะสม Badge, บันทึกโน้ต และไฮไลต์เนื้อหา</li>
-              <li>เพื่อใคร: เหมาะสำหรับนักศึกษาแพทย์ พยาบาล และเจ้าหน้าที่ที่เกี่ยวข้องกับการดูแลผู้ป่วยผ่าตัด</li>
-              <li>การจัดการเนื้อหา: ผู้ดูแลสามารถเพิ่ม/แก้ไขวิดีโอ หนังสือ และแบบทดสอบผ่านหน้า Admin</li>
-            </ul>
-            <div style="margin-top:8px;color:var(--t2);font-size:12px">เนื้อหาทั้งหมดถูกจัดเป็นชุดหัวข้อและบท เพื่อให้ผู้เรียนสามารถติดตามและทบทวนได้เป็นขั้นตอน</div>
-          </div>
-        </div>
-      </div>
-
       <div style="padding:0 20px 8px"><div style="font-size:12px;font-weight:700;color:var(--p);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">กดปุ่มเพื่อเริ่มเรียนได้เลย !</div></div>
       ${cont}
     </div>
-    <!-- สถิติสรุปถูกนำออกตามคำขอ (วิดีโอ / แบบทดสอบ / Badge) -->
+
+    <div style="padding:20px">
+      <div style="display:flex;gap:10px">
+        <a href="postoperative_patient.html" class="btn bp" style="flex:1;text-decoration:none;display:inline-flex;align-items:center;justify-content:center">คำแนะนำหลังผ่าตัด (สำหรับผู้ป่วย)</a>
+        <a href="postoperative_formal.html" class="btn bgh" style="flex:1;text-decoration:none;display:inline-flex;align-items:center;justify-content:center">ข้อแนะนำสำหรับเจ้าหน้าที่</a>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 20px;margin-bottom:22px">
+      <div class="card" style="padding:14px;text-align:center"><div style="font-size:22px;margin-bottom:4px">🎬</div><div style="font-size:20px;font-weight:800;color:var(--p)">${ST.vc}</div><div style="font-size:11px;color:var(--t2)">วิดีโอ</div></div>
+      <div class="card" style="padding:14px;text-align:center"><div style="font-size:22px;margin-bottom:4px">📝</div><div style="font-size:20px;font-weight:800;color:var(--g)">${ST.qc}</div><div style="font-size:11px;color:var(--t2)">แบบทดสอบ</div></div>
+      <div class="card" style="padding:14px;text-align:center"><div style="font-size:22px;margin-bottom:4px">🏅</div><div style="font-size:20px;font-weight:800;color:var(--o)">${ST.badges.length}</div><div style="font-size:11px;color:var(--t2)">Badge</div></div>
+    </div>
 
     <div style="padding:0 20px 8px"><div style="font-size:17px;font-weight:700;margin-bottom:12px">วิชาทั้งหมด</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         ${SUBS.filter(s=>s.id!=='all').map(s=>`
-          <button onclick="sw('books');renderBooks()" style="background:var(--bgc);border:1px solid var(--br);border-radius:var(--rlg);padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:var(--f);box-shadow:var(--sh);transition:all .2s">
+          <button onclick="sw('videos');vf='${s.id}';renderVideos()" style="background:var(--bgc);border:1px solid var(--br);border-radius:var(--rlg);padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:var(--f);box-shadow:var(--sh);transition:all .2s">
             <div style="width:40px;height:40px;border-radius:10px;background:${s.c}20;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${s.ic}</div>
-            <div style="text-align:left"><div style="font-size:13px;font-weight:700;color:var(--t1)">${s.n}</div><div style="font-size:11px;color:${s.c}">เปิดหนังสือ →</div></div>
+            <div style="text-align:left"><div style="font-size:13px;font-weight:700;color:var(--t1)">${s.n}</div><div style="font-size:11px;color:${s.c}">ดูเนื้อหา →</div></div>
           </button>`).join('')}
       </div>
     </div>
 
-    
+    ${ST.badges.length?`<div style="padding:20px 20px 0"><div style="font-size:17px;font-weight:700;margin-bottom:12px">Badge ของฉัน</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${ST.badges.map(bid=>{const b=BDEFS.find(x=>x.id===bid);return b?`<div style="background:var(--bgc);border:1px solid var(--br);border-radius:var(--rlg);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh)">
+          <span style="font-size:28px">${b.ic}</span>
+          <div><div style="font-size:13px;font-weight:700">${b.n}</div><div style="font-size:11px;color:var(--t2)">${b.d}</div></div>
+        </div>`:''}).join('')}
+      </div></div>`:''}
   </div>`;
   trigPB();
 }
@@ -359,18 +335,19 @@ window.renderVideos=function(){
           const st=pg>=100?'done':pg>0?'watching':'new';
           const sl={done:'ดูแล้ว ✓',watching:'กำลังดู',new:'ใหม่'}[st];
           const sc={done:'var(--g)',watching:'var(--o)',new:'var(--p)'}[st];
-          const thumb = v.ytId ? 'https://i.ytimg.com/vi/'+v.ytId+'/hqdefault.jpg' : (v.fileUrl? v.fileUrl : null);
-          return `<div class="card" style="cursor:pointer;padding:0;overflow:hidden;border:2px solid ${sb.c};box-shadow:0 4px 16px ${sb.c}20" onclick="viewVid('${v.id}')">
-            <div style="height:110px;position:relative;overflow:hidden;background:${thumb? 'transparent':'linear-gradient(135deg,'+sb.c+','+sb.c+'88)'};display:flex;align-items:center;justify-content:center">
-              ${thumb && v.ytId ? `<img src="${thumb}" alt="thumb" style="width:100%;height:100%;object-fit:cover;display:block">` : (v.fileUrl ? `<video src="${v.fileUrl}" preload="metadata" muted style="width:100%;height:100%;object-fit:cover;display:block"></video>` : `<div style="font-size:38px;opacity:.3">${sb.ic}</div>`)}
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 6px 20px rgba(0,0,0,.25)">▶️</div></div>
-              <div style="position:absolute;top:10px;left:10px;background:${sc};color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:99px">${sl}</div>
+          return `<div class="card" style="cursor:pointer;padding:0;overflow:hidden" onclick="viewVid('${v.id}')">
+            <div style="height:110px;background:linear-gradient(135deg,${sb.c},${sb.c}88);display:flex;align-items:center;justify-content:center;position:relative">
+              <div style="font-size:38px;opacity:.3">${sb.ic}</div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+                <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 16px rgba(0,0,0,.2)">▶️</div>
+              </div>
+              <div style="position:absolute;top:8px;left:8px;background:${sc};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px">${sl}</div>
             </div>
-            <div style="padding:16px">
-              <div style="font-size:11px;color:${sb.c};font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">${sb.ic} ${sb.n}</div>
-              <div style="font-size:15px;font-weight:800;margin-bottom:8px;line-height:1.4;color:var(--t1)">${v.t}</div>
-              ${(v.sd||'')?`<div style="font-size:14px;letter-spacing:.2px;color:var(--t2);line-height:1.6;margin-bottom:${pg>0?'12px':'0'}">${v.sd}</div>`:''}
-              ${pg>0?`<div class="pt" style="height:6px;background:var(--bgi);border-radius:99px"><div class="pf" data-t="${pg}" style="background:${sb.c};border-radius:99px;height:100%"></div></div>`:''}
+            <div style="padding:14px">
+              <div style="font-size:12px;color:${sb.c};font-weight:600;margin-bottom:4px">${sb.ic} ${sb.n}</div>
+              <div style="font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.3">${v.t}</div>
+              ${(v.sd||'')?`<div class="desc-preview" style="margin-bottom:${pg>0?'10px':'0'}">${v.sd}</div>`:''}
+              ${pg>0?`<div class="pt"><div class="pf" data-t="${pg}" style="background:${sb.c}"></div></div>`:''}
             </div>
           </div>`;
         }).join('')}
@@ -390,22 +367,20 @@ window.viewVid=function(id){
       <h1 style="color:#fff;font-size:19px;font-weight:800;line-height:1.3;margin-bottom:6px">${v.t}</h1>
       <div style="color:rgba(255,255,255,.8);font-size:13px">${sb.ic} ${sb.n}</div>
     </div>
-    <div style="padding:20px;margin:0;background:#fafafa;border-top:1px solid #e0e0e0">
-      <div style="aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden">
-        ${v.fileUrl ? `<video src="${v.fileUrl}" controls autoplay style="width:100%;height:100%;display:block;"></video>` : `<iframe src="https://www.youtube.com/embed/${v.ytId||v.id}?autoplay=1" frameborder="0" allowfullscreen style="width:100%;height:100%;display:block;"></iframe>`}
-      </div>
-      <div style="height:4px;background:#e0e0e0;margin-top:12px"><div id="vbar" style="height:100%;background:${sb.c};width:${pg}%;transition:width .3s"></div></div>
-      <div style="padding:12px 0;display:flex;align-items:center;justify-content:flex-end">
-        <button onclick="markWatched('${id}')" style="background:${pg>=100?'#ddd':''+sb.c};color:${pg>=100?'#666':'#fff'};border:none;border-radius:99px;padding:10px 20px;font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">
+    <div style="margin:-12px 20px 0;border-radius:var(--rlg);overflow:hidden;box-shadow:var(--shl);aspect-ratio:16/9;background:#000;">
+      ${v.fileUrl ? `<video src="${v.fileUrl}" controls autoplay style="width:100%;height:100%;display:block;"></video>` : `<iframe src="https://www.youtube.com/embed/${v.ytId||v.id}?autoplay=1" frameborder="0" allowfullscreen style="width:100%;height:100%;display:block;"></iframe>`}
+      <div style="height:4px;background:#222"><div id="vbar" style="height:100%;background:${sb.c};width:${pg}%;transition:width .3s"></div></div>
+      <div style="background:#111;padding:12px 18px;display:flex;align-items:center;justify-content:flex-end">
+        <button onclick="markWatched('${id}')" style="background:${pg>=100?'#333':''+sb.c};color:#fff;border:none;border-radius:99px;padding:8px 18px;font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">
           ${pg>=100?'✓ ดูแล้ว':'✅ ดูจบแล้ว (+20 XP)'}
         </button>
       </div>
     </div>
-    ${(v.desc||v.d||'')?`<div style="padding:24px 20px;margin:0;background:#fafafa">
-      <h2 style="font-size:17px;font-weight:800;margin-bottom:16px;color:var(--t1)">รายละเอียด</h2>
-      <div class="desc-pre" style="border:3px solid ${sb.c}40;box-shadow:0 4px 12px ${sb.c}14;background:#fafafa">${v.desc||v.d}</div>
+    ${(v.desc||v.d||'')?`<div style="padding:20px 20px 0">
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:8px">รายละเอียด</h2>
+      <div class="desc-pre">${v.desc||v.d}</div>
     </div>`:''}
-    ${rel.length?`<div style="padding:20px">
+    ${rel.length?`<div style="padding:20px 20px 0">
       <h2 style="font-size:16px;font-weight:700;margin-bottom:12px">วิดีโอถัดไป</h2>
       <div style="display:flex;flex-direction:column;gap:10px">
         ${rel.map(r=>`<div class="crow" style="cursor:pointer" onclick="viewVid('${r.id}')">
@@ -487,10 +462,13 @@ window.openCh=function(bid,n){
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button onclick="hlBtn()" id="hlb" style="flex:1;padding:10px;border-radius:var(--rmd);background:rgba(186,117,23,.1);color:var(--o);border:1.5px solid rgba(186,117,23,.3);font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">🖌️ ไฮไลต์</button>
+        <button onclick="openNote()" style="flex:1;padding:10px;border-radius:var(--rmd);background:var(--pxl);color:var(--p);border:1.5px solid rgba(83,74,183,.3);font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer">📝 โน้ต</button>
         ${rVid?`<button onclick="viewVid('${rVid.id}')" style="flex:1;padding:10px;border-radius:var(--rmd);background:rgba(29,158,117,.1);color:var(--g);border:1.5px solid rgba(29,158,117,.3);font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer">▶️ วิดีโอ</button>`:''}
+        <button onclick="openAdminForChapter('${bid}',${n})" style="flex:1;padding:10px;border-radius:var(--rmd);background:#534AB7;color:#fff;border:1.5px solid rgba(83,74,183,.25);font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer">⚙️ แก้หน้า</button>
       </div>
-      <div id="rdr" style="font-size:16px;line-height:2.1;letter-spacing:.3px;color:#2c2c2c;margin-bottom:16px;word-break:break-word;hyphens:auto;padding:24px;background:#fafafa;border-radius:16px;border:3px solid ${b.c}40;box-shadow:0 4px 12px ${b.c}14">${ck}</div>
-      ${qset && subjectPct(b.s) >= 100 ? `<button class="btn bgh" style="margin-bottom:10px" onclick="goQuiz('${qset.id}')">📝 ทำแบบทดสอบบทนี้</button>` : ''}
+      <div id="rdr" style="font-size:14px;line-height:1.9;color:var(--t1);margin-bottom:16px">${ck}</div>
+      ${qset?`<button class="btn bgh" style="margin-bottom:10px" onclick="goQuiz('${qset.id}')">📝 ทำแบบทดสอบบทนี้</button>`:''}
       ${n<=done?`<button class="btn bg_" style="opacity:.6" disabled>✓ อ่านบทนี้แล้ว</button>`:`<button class="btn bp" onclick="finCh('${bid}',${n})">✅ ครบบทแล้ว (+15 XP)</button>`}
     </div>
   </div>`;
