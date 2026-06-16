@@ -150,6 +150,104 @@ app.delete('/api/videos/:id', (req, res) => {
   res.json({ message: 'ลบวิดีโอสำเร็จ', video: removed });
 });
 
+// Book Editing API
+const BOOK_HISTORY_FILE = path.join(__dirname, 'book-history.json');
+const BOOK_CONTENT_FILE = path.join(__dirname, 'book-content.json');
+
+// อ่านประวัติการแก้ไข
+const readBookHistory = () => {
+  try {
+    if (fs.existsSync(BOOK_HISTORY_FILE)) {
+      return JSON.parse(fs.readFileSync(BOOK_HISTORY_FILE, 'utf8'));
+    }
+  } catch (e) {}
+  return [];
+};
+
+// บันทึกประวัติการแก้ไข
+const writeBookHistory = (history) => {
+  try {
+    fs.writeFileSync(BOOK_HISTORY_FILE, JSON.stringify(history, null, 2), 'utf8');
+  } catch (e) {}
+};
+
+// อ่านเนื้อหาบทหนังสือ
+const readBookContent = () => {
+  try {
+    if (fs.existsSync(BOOK_CONTENT_FILE)) {
+      return JSON.parse(fs.readFileSync(BOOK_CONTENT_FILE, 'utf8'));
+    }
+  } catch (e) {}
+  return {};
+};
+
+// บันทึกเนื้อหาบทหนังสือ
+const writeBookContent = (content) => {
+  try {
+    fs.writeFileSync(BOOK_CONTENT_FILE, JSON.stringify(content, null, 2), 'utf8');
+  } catch (e) {}
+};
+
+// API: ดึงประวัติการแก้ไข
+app.get('/api/book-history', (req, res) => {
+  const history = readBookHistory();
+  res.json(history);
+});
+
+// API: บันทึกการแก้ไข
+app.post('/api/book-history', (req, res) => {
+  const { section, content, chapterNum, chapterTitle } = req.body;
+  if (!section || !content) {
+    return res.status(400).json({ error: 'Missing section or content' });
+  }
+
+  const history = readBookHistory();
+  const edit = {
+    id: Date.now(),
+    section: section,
+    chapterNum: chapterNum || null,
+    chapterTitle: chapterTitle || 'Full Content',
+    contentPreview: content.substring(0, 100),
+    timestamp: new Date().toISOString(),
+    timeLocal: new Date().toLocaleString('th-TH')
+  };
+
+  history.unshift(edit);
+  writeBookHistory(history);
+
+  res.json({ message: 'Edit saved successfully', edit });
+});
+
+// API: ดึงเนื้อหาบทหนังสือ
+app.get('/api/book/:section', (req, res) => {
+  const { section } = req.params;
+  const content = readBookContent();
+  if (content[section]) {
+    res.json(content[section]);
+  } else {
+    res.status(404).json({ error: 'Section not found' });
+  }
+});
+
+// API: อัปเดตเนื้อหาบทหนังสือ
+app.post('/api/book/:section', (req, res) => {
+  const { section } = req.params;
+  const { htmlContent } = req.body;
+  if (!htmlContent) {
+    return res.status(400).json({ error: 'Missing content' });
+  }
+
+  const content = readBookContent();
+  content[section] = {
+    html: htmlContent,
+    updatedAt: new Date().toISOString(),
+    updatedLocal: new Date().toLocaleString('th-TH')
+  };
+  writeBookContent(content);
+
+  res.json({ message: 'Content updated successfully', section: section });
+});
+
 // ให้ Route /admin เปิดไฟล์ admin.html
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));

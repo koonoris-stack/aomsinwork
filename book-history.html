@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ประวัติการแก้ไขบทหนังสือ - Healthcare Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --p: #534AB7; --pl: #7B74D4; --pd: #3D368A;
+    --bg: #EEEEFF; --bgc: #FFFFFF; --bgi: #F0EFFF;
+    --t1: #1A1835; --t2: #6B7280;
+    --br: rgba(83,74,183,.14);
+    --g: #1D9E75; --r: #C62828; --o: #BA7517;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans Thai', sans-serif; background: var(--bg); color: var(--t1); padding: 20px 10px 40px; }
+  
+  .container { max-width: 1000px; margin: 0 auto; }
+  
+  .header { background: linear-gradient(135deg, var(--p), var(--pl)); color: #fff; padding: 28px; border-radius: 16px; margin-bottom: 28px; display: flex; align-items: center; gap: 16px; }
+  .header-icon { font-size: 32px; }
+  .header-content h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+  .header-content p { font-size: 13px; opacity: 0.9; }
+  
+  .nav-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .btn { padding: 12px 20px; border: none; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; text-decoration: none; display: inline-block; }
+  .btn-primary { background: var(--p); color: #fff; }
+  .btn-primary:hover { background: var(--pd); }
+  .btn-secondary { background: #e0e0e0; color: var(--t1); }
+  .btn-secondary:hover { background: #d0d0d0; }
+  .btn-outline { background: transparent; border: 2px solid var(--p); color: var(--p); }
+  .btn-outline:hover { background: var(--bgi); }
+  
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--bgc); padding: 20px; border-radius: 16px; box-shadow: 0 4px 16px rgba(83,74,183,.1); border-left: 4px solid var(--p); }
+  .stat-label { font-size: 12px; color: var(--t2); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .stat-value { font-size: 28px; font-weight: 800; color: var(--p); }
+  .stat-sub { font-size: 11px; color: var(--t2); margin-top: 6px; }
+  
+  .filters { background: var(--bgc); padding: 16px; border-radius: 12px; margin-bottom: 24px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; box-shadow: 0 2px 8px rgba(83,74,183,.08); }
+  .filter-group { display: flex; gap: 8px; align-items: center; }
+  .filter-group label { font-size: 13px; font-weight: 700; color: var(--t2); }
+  .filter-group select, .filter-group input { padding: 8px 12px; border: 1px solid var(--br); border-radius: 8px; font-family: inherit; font-size: 13px; }
+  .filter-group select:focus, .filter-group input:focus { outline: none; border-color: var(--p); }
+  
+  .history-list { display: flex; flex-direction: column; gap: 12px; }
+  .history-card { background: var(--bgc); padding: 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(83,74,183,.1); border-left: 4px solid var(--p); transition: all .2s; }
+  .history-card:hover { box-shadow: 0 4px 16px rgba(83,74,183,.15); transform: translateX(4px); }
+  
+  .history-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .history-section { background: var(--bgi); color: var(--p); padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+  .history-chapter { background: rgba(186,117,23,.12); color: var(--o); padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+  .history-time { font-size: 12px; color: var(--t2); margin-left: auto; }
+  
+  .history-preview { background: #f8f8ff; padding: 12px; border-radius: 8px; border-left: 2px solid var(--br); font-size: 13px; color: var(--t2); line-height: 1.5; white-space: pre-wrap; word-break: break-word; max-height: 120px; overflow: hidden; }
+  
+  .history-preview::after { content: '...'; font-weight: 700; }
+  
+  .history-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .action-btn { padding: 6px 12px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; transition: all .2s; }
+  .action-btn-info { background: rgba(83,74,183,.1); color: var(--p); }
+  .action-btn-info:hover { background: var(--bgi); }
+  .action-btn-delete { background: rgba(198,40,40,.1); color: var(--r); }
+  .action-btn-delete:hover { background: #ffebee; }
+  
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--t2); }
+  .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state-text { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .empty-state-sub { font-size: 13px; }
+  
+  .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+  .page-btn { padding: 8px 14px; border: 1px solid var(--br); background: var(--bgc); border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; }
+  .page-btn.active { background: var(--p); color: #fff; border-color: var(--p); }
+  
+  .section-summary { background: linear-gradient(135deg, rgba(83,74,183,.05), rgba(123,116,212,.05)); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--br); }
+  .section-summary-title { font-size: 14px; font-weight: 800; color: var(--p); margin-bottom: 10px; }
+  .section-summary-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .section-summary-item { display: flex; align-items: center; gap: 8px; }
+  .section-summary-item-badge { background: var(--p); color: #fff; font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 99px; min-width: 28px; text-align: center; }
+  .section-summary-item-label { font-size: 12px; color: var(--t2); }
+
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+  .modal.show { display: flex; }
+  .modal-content { background: var(--bgc); border-radius: 16px; padding: 28px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; }
+  .modal-header { font-size: 18px; font-weight: 800; color: var(--p); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--br); }
+  .modal-body { font-size: 13px; line-height: 1.7; color: var(--t2); white-space: pre-wrap; word-break: break-word; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; }
+  .modal-close { background: #e0e0e0; color: var(--t1); }
+  .modal-close:hover { background: #d0d0d0; }
+
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .history-header { flex-direction: column; align-items: flex-start; }
+    .history-time { margin-left: 0; margin-top: 8px; }
+    .header { flex-direction: column; text-align: center; }
+    .header-content h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-icon">📖</div>
+    <div class="header-content">
+      <h1>ประวัติการแก้ไขบทหนังสือ</h1>
+      <p>บันทึกการเปลี่ยนแปลงทั้งหมด - การดูแลหลังผ่าตัด, Patient Education, OR Safety Protocol</p>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <a href="/edit-book.html" class="btn btn-primary">✏️ แก้ไขบทหนังสือ</a>
+    <a href="/admin" class="btn btn-secondary">⚙️ Admin Panel</a>
+    <a href="/" class="btn btn-secondary">🏠 หน้าแรก</a>
+    <button onclick="exportHistory()" class="btn btn-outline">📥 ส่งออก</button>
+    <button onclick="clearHistory()" class="btn btn-outline" style="color:#C62828; border-color:#C62828;">🗑️ ล้างประวัติ</button>
+  </div>
+
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <div class="section-summary" id="sectionSummary"></div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>🔎 ค้นหา:</label>
+      <input type="text" id="searchInput" placeholder="บท, หัวเรื่อง, เนื้อหา..." onkeyup="filterHistory()">
+    </div>
+    <div class="filter-group">
+      <label>📂 บท:</label>
+      <select id="sectionFilter" onchange="filterHistory()">
+        <option value="">ทั้งหมด</option>
+        <option value="postop">🏥 หลังผ่าตัด</option>
+        <option value="patient">👤 Patient Edu</option>
+        <option value="or">⚕️ OR Safety</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="history-list" id="historyList"></div>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detailModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header" id="modalTitle"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="modal-close" onclick="closeModal()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allHistory = [];
+  let filteredHistory = [];
+  let currentPage = 1;
+  const itemsPerPage = 10;
+
+  async function loadHistory() {
+    try {
+      const response = await fetch('/api/book-history');
+      allHistory = await response.json();
+      filteredHistory = [...allHistory];
+      updateStats();
+      updateSectionSummary();
+      displayHistory();
+    } catch (e) {
+      console.error('Failed to load history:', e);
+      document.getElementById('historyList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-text">ไม่สามารถโหลดประวัติได้</div></div>';
+    }
+  }
+
+  function updateStats() {
+    const stats = {
+      total: allHistory.length,
+      postop: allHistory.filter(h => h.section === 'postop').length,
+      patient: allHistory.filter(h => h.section === 'patient').length,
+      or: allHistory.filter(h => h.section === 'or').length
+    };
+
+    const lastEdit = allHistory.length > 0 ? allHistory[0].timeLocal : '-';
+
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-label">📊 จำนวนการแก้ไขทั้งหมด</div>
+        <div class="stat-value">${stats.total}</div>
+        <div class="stat-sub">ครั้งสุดท้าย: ${lastEdit}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🏥 การดูแลหลังผ่าตัด</div>
+        <div class="stat-value">${stats.postop}</div>
+        <div class="stat-sub">จำนวนการแก้ไข</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">👤 Patient Education</div>
+        <div class="stat-value">${stats.patient}</div>
+        <div class="stat-sub">จำนวนการแก้ไข</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">⚕️ OR Safety Protocol</div>
+        <div class="stat-value">${stats.or}</div>
+        <div class="stat-sub">จำนวนการแก้ไข</div>
+      </div>
+    `;
+  }
+
+  function updateSectionSummary() {
+    const sections = { postop: 'หลังผ่าตัด', patient: 'Patient Education', or: 'OR Safety' };
+    const summaryItems = Object.entries(sections).map(([key, label]) => {
+      const count = allHistory.filter(h => h.section === key).length;
+      return `<div class="section-summary-item"><div class="section-summary-item-badge">${count}</div><div class="section-summary-item-label">${label}</div></div>`;
+    }).join('');
+
+    document.getElementById('sectionSummary').innerHTML = `
+      <div class="section-summary-title">📈 สรุปการแก้ไขแต่ละบท</div>
+      <div class="section-summary-items">${summaryItems}</div>
+    `;
+  }
+
+  function filterHistory() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const section = document.getElementById('sectionFilter').value;
+
+    filteredHistory = allHistory.filter(item => {
+      const matchSearch = !search || 
+        item.section.includes(search) || 
+        item.chapterTitle.toLowerCase().includes(search) || 
+        item.contentPreview.toLowerCase().includes(search);
+      const matchSection = !section || item.section === section;
+      return matchSearch && matchSection;
+    });
+
+    currentPage = 1;
+    displayHistory();
+  }
+
+  function displayHistory() {
+    const list = document.getElementById('historyList');
+
+    if (filteredHistory.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">ไม่มีประวัติการแก้ไข</div><div class="empty-state-sub">ลองปรับตัวกรองหรือค้นหาใหม่</div></div>';
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = filteredHistory.slice(start, end);
+
+    const sectionIcons = { postop: '🏥', patient: '👤', or: '⚕️' };
+
+    list.innerHTML = pageItems.map(item => `
+      <div class="history-card">
+        <div class="history-header">
+          <span class="history-section">${sectionIcons[item.section] || '📄'} ${item.section}</span>
+          ${item.chapterNum ? `<span class="history-chapter">บทที่ ${item.chapterNum}</span>` : ''}
+          <span class="history-time">🕐 ${item.timeLocal}</span>
+        </div>
+        <div class="history-preview">${item.contentPreview}</div>
+        <div class="history-actions">
+          <button class="action-btn action-btn-info" onclick="showDetail(${item.id})">👁️ ดูเต็ม</button>
+          <button class="action-btn action-btn-delete" onclick="deleteEdit(${item.id})">🗑️ ลบ</button>
+        </div>
+      </div>
+    `).join('');
+
+    updatePagination();
+  }
+
+  function updatePagination() {
+    const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+    const pagination = document.getElementById('pagination');
+
+    if (totalPages <= 1) {
+      pagination.innerHTML = '';
+      return;
+    }
+
+    const buttons = [];
+    if (currentPage > 1) {
+      buttons.push(`<button class="page-btn" onclick="gotoPage(1)">« หน้าแรก</button>`);
+      buttons.push(`<button class="page-btn" onclick="gotoPage(${currentPage - 1})">‹ ก่อนหน้า</button>`);
+    }
+
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+      buttons.push(`<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`);
+    }
+
+    if (currentPage < totalPages) {
+      buttons.push(`<button class="page-btn" onclick="gotoPage(${currentPage + 1})">ถัดไป ›</button>`);
+      buttons.push(`<button class="page-btn" onclick="gotoPage(${totalPages})">หน้าสุดท้าย »</button>`);
+    }
+
+    pagination.innerHTML = buttons.join('');
+  }
+
+  function gotoPage(page) {
+    currentPage = page;
+    displayHistory();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showDetail(id) {
+    const item = allHistory.find(h => h.id === id);
+    if (item) {
+      document.getElementById('modalTitle').textContent = `${item.section} - ${item.chapterTitle} (${item.timeLocal})`;
+      document.getElementById('modalBody').textContent = item.contentPreview;
+      document.getElementById('detailModal').classList.add('show');
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('detailModal').classList.remove('show');
+  }
+
+  function deleteEdit(id) {
+    if (confirm('ยืนยันการลบประวัตินี้?')) {
+      allHistory = allHistory.filter(h => h.id !== id);
+      filterHistory();
+    }
+  }
+
+  function exportHistory() {
+    const csv = 'ส่วน,บท,หัวเรื่อง,เนื้อหา,เวลา\n' + allHistory.map(h => 
+      `"${h.section}","${h.chapterNum || '-'}","${h.chapterTitle}","${h.contentPreview}","${h.timeLocal}"`
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'book-history-' + new Date().toISOString().split('T')[0] + '.csv';
+    link.click();
+  }
+
+  function clearHistory() {
+    if (confirm('ยืนยันการล้างประวัติทั้งหมด? ไม่สามารถคืนค่าได้')) {
+      allHistory = [];
+      filteredHistory = [];
+      displayHistory();
+      updateStats();
+      updateSectionSummary();
+    }
+  }
+
+  document.getElementById('detailModal').addEventListener('click', (e) => {
+    if (e.target.id === 'detailModal') closeModal();
+  });
+
+  // Load on init
+  loadHistory();
+</script>
+</body>
+</html>

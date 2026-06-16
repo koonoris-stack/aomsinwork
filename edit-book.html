@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แก้ไขบทหนังสือ - Healthcare Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+  :root {
+    --p: #534AB7; --pl: #7B74D4; --pd: #3D368A;
+    --bg: #EEEEFF; --bgc: #FFFFFF; --bgi: #F0EFFF;
+    --t1: #1A1835; --t2: #6B7280;
+    --br: rgba(83,74,183,.14);
+    --g: #1D9E75; --r: #C62828; --o: #BA7517;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans Thai', sans-serif; background: var(--bg); color: var(--t1); padding: 20px 10px 40px; }
+  
+  .container { max-width: 960px; margin: 0 auto; }
+  
+  .header { background: linear-gradient(135deg, var(--p), var(--pl)); color: #fff; padding: 24px; border-radius: 16px; margin-bottom: 24px; }
+  .header h1 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .header p { font-size: 13px; opacity: 0.9; }
+  
+  .main-content { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+  
+  .editor-panel { background: var(--bgc); padding: 24px; border-radius: 16px; box-shadow: 0 10px 40px rgba(83,74,183,.12); }
+  
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; background: #EEEEFF; padding: 6px; border-radius: 12px; }
+  .tab-btn { flex: 1; padding: 10px 12px; background: transparent; color: var(--p); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 12px; transition: all .2s; }
+  .tab-btn.active { background: var(--p); color: #fff; box-shadow: 0 4px 12px rgba(83,74,183,.3); }
+  
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  
+  .section-header { font-size: 15px; font-weight: 800; color: var(--p); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--br); }
+  
+  #editor-container { background: #fafafa; border: 1px solid var(--br); border-radius: 10px; min-height: 400px; margin-bottom: 20px; }
+  
+  .ql-container { font-size: 14px; font-family: 'Noto Sans Thai', sans-serif; }
+  .ql-editor { min-height: 360px; padding: 16px; }
+  
+  .action-buttons { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+  .btn { padding: 12px 20px; border: none; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
+  .btn-primary { background: var(--p); color: #fff; flex: 1; }
+  .btn-primary:hover { background: var(--pd); transform: translateY(-2px); }
+  .btn-secondary { background: #e0e0e0; color: var(--t1); }
+  .btn-secondary:hover { background: #d0d0d0; }
+  .btn-success { background: var(--g); color: #fff; }
+  .btn-success:hover { background: #16a359; }
+  .btn-danger { background: var(--r); color: #fff; }
+  .btn-danger:hover { background: #b71c1c; }
+  
+  .toast { position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: 10px; color: #fff; font-weight: 700; z-index: 1000; animation: slideIn .3s ease; }
+  .toast.success { background: var(--g); }
+  .toast.error { background: var(--r); }
+  @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  
+  /* Sidebar */
+  .sidebar { background: var(--bgc); padding: 20px; border-radius: 16px; box-shadow: 0 10px 40px rgba(83,74,183,.12); height: fit-content; position: sticky; top: 20px; }
+  .sidebar-title { font-size: 14px; font-weight: 800; color: var(--p); margin-bottom: 12px; }
+  
+  .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; }
+  .history-item { background: #f8f8ff; padding: 12px; border-radius: 8px; border: 1px solid var(--br); cursor: pointer; transition: all .2s; }
+  .history-item:hover { background: var(--bgi); border-color: var(--p); }
+  .history-item.active { background: var(--p); color: #fff; border-color: var(--p); }
+  .history-item-section { font-size: 12px; font-weight: 700; }
+  .history-item-time { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+  
+  .section-list { display: flex; flex-direction: column; gap: 8px; }
+  .section-btn { padding: 8px 12px; background: #f8f8ff; border: 1px solid var(--br); border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; text-align: left; }
+  .section-btn:hover { background: var(--bgi); }
+  .section-btn.active { background: var(--p); color: #fff; }
+  
+  .stats-box { background: #f8f8ff; padding: 12px; border-radius: 8px; border: 1px solid var(--br); margin-bottom: 12px; font-size: 12px; }
+  .stats-label { color: var(--t2); }
+  .stats-value { font-size: 16px; font-weight: 800; color: var(--p); }
+
+  @media (max-width: 768px) {
+    .main-content { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toastContainer"></div>
+
+<div class="container">
+  <div class="header">
+    <h1>📖 แก้ไขบทหนังสือ</h1>
+    <p>การดูแลหลังผ่าตัด, Patient Education, OR Safety Protocol</p>
+  </div>
+
+  <div class="main-content">
+    <div class="editor-panel">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchSection('postop')">🏥 หลังผ่าตัด</button>
+        <button class="tab-btn" onclick="switchSection('patient')">👤 Patient Edu</button>
+        <button class="tab-btn" onclick="switchSection('or')">⚕️ OR Safety</button>
+      </div>
+
+      <div class="tab-content active" id="postop-content">
+        <div class="section-header">การดูแลหลังผ่าตัด (Postoperative Care)</div>
+        <div id="editor-container"></div>
+      </div>
+
+      <div class="tab-content" id="patient-content">
+        <div class="section-header">Patient Education</div>
+        <div id="editor-container-patient" class="ql-container" style="display:none;"></div>
+      </div>
+
+      <div class="tab-content" id="or-content">
+        <div class="section-header">OR Safety Protocol</div>
+        <div id="editor-container-or" class="ql-container" style="display:none;"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="previewContent()">👁️ ดูตัวอย่าง</button>
+        <button class="btn btn-success" onclick="saveChanges()">💾 บันทึกการเปลี่ยนแปลง</button>
+        <a href="/book-history.html" class="btn btn-outline" style="border-color:#534AB7; color:#534AB7;">📋 ดูประวัติ</a>
+        <button class="btn btn-primary" onclick="location.href='/admin'">← กลับ Admin</button>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="stats-box">
+        <div class="stats-label">จำนวนการแก้ไข</div>
+        <div class="stats-value" id="edit-count">0</div>
+      </div>
+
+      <div class="sidebar-title">📚 เลือกบท</div>
+      <div class="section-list" id="section-list"></div>
+
+      <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--br);">
+
+      <div class="sidebar-title">📝 ประวัติการแก้ไข</div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Preview -->
+<div id="previewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:999; overflow-y:auto; padding:20px;">
+  <div style="background:#fff; max-width:800px; margin:40px auto; border-radius:16px; padding:32px; color:#1a1835; font-family:'Noto Sans Thai',sans-serif;">
+    <h2 style="color:#534AB7; margin-bottom:16px;">ตัวอย่างเนื้อหา</h2>
+    <div id="previewContent" style="line-height:1.8; color:#6B7280;"></div>
+    <button onclick="document.getElementById('previewModal').style.display='none'" style="margin-top:20px; padding:10px 20px; background:#534AB7; color:#fff; border:none; border-radius:8px; cursor:pointer;">ปิด</button>
+  </div>
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+  let quill, quillPatient, quillOR;
+  let currentSection = 'postop';
+  let editHistory = [];
+  let editCount = 0;
+
+  // ข้อมูลจากไฟล์
+  const bookContent = {
+    postop: {
+      title: 'การดูแลหลังผ่าตัด (Postoperative Care)',
+      chapters: [
+        { num: 1, title: 'การฟื้นตัวหลังผ่าตัด', content: 'หลังการผ่าตัด ร่างกายต้องการเวลาในการฟื้นฟู ผู้ป่วยอาจรู้สึกอ่อนเพลีย ง่วงนอน หรือมีอาการปวดบริเวณแผล ซึ่งเป็นอาการปกติ ควรพักผ่อนให้เพียงพอ ดื่มน้ำ และรับประทานอาหารที่เหมาะสมเมื่อแพทย์อนุญาต หากมีอาการปวดให้ใช้ยาตามคำสั่งแพทย์ และแจ้งทีมรักษาทันทีหากมีอาการปวดรุนแรงหรืออาการผิดปกติอื่น ๆ' },
+        { num: 2, title: 'การดูแลแผลผ่าตัด', content: 'ผู้ป่วยควรรักษาความสะอาดของแผลและปฏิบัติตามคำแนะนำของแพทย์อย่างเคร่งครัด หลีกเลี่ยงการแกะ เกา หรือสัมผัสแผลโดยไม่จำเป็น เปลี่ยนผ้าพันแผลตามคำแนะนำ และปฏิบัติตามข้อแนะนำเรื่องการอาบน้ำหรือการปกป้องแผล หากพบอาการบวม แดง หรือมีหนอง ให้ติดต่อแพทย์ทันที' },
+        { num: 3, title: 'การรับประทานยาและการใช้ชีวิต', content: 'ควรรับประทานยาตามแพทย์สั่งอย่างครบถ้วน รวมทั้งยาลดปวดและยาปฏิชีวนะตามที่กำหนด หลีกเลี่ยงกิจกรรมที่ใช้แรงมากเกินไป เช่น การยกของหนัก และค่อย ๆ กลับไปทำกิจวัตรประจำวันตามคำแนะนำของบุคลากรทางการแพทย์ หากจะเริ่มยาหรือผลิตภัณฑ์เสริมอาหารใหม่ ควรปรึกษาแพทย์ก่อน' },
+        { num: 4, title: 'อาการที่ควรรีบพบแพทย์', content: 'หากมีอาการดังต่อไปนี้ ควรรีบติดต่อโรงพยาบาลหรือพบแพทย์ทันที: ไข้สูงกว่า 38°C หรือมีหนาวสั่น, แผลบวม แดง หรือมีหนอง, เลือดออกผิดปกติ หรือการเลือดออกที่ควบคุมไม่ได้, ปวดรุนแรงที่ไม่บรรเทาด้วยยา, หายใจลำบาก เวียนศีรษะ หรือเป็นลม' }
+      ]
+    },
+    patient: {
+      title: 'Patient Education',
+      chapters: [
+        { num: 1, title: 'Patient Education คืออะไร?', content: 'Patient Education คือการให้ความรู้และข้อมูลที่จำเป็นแก่ผู้ป่วยและญาติ เพื่อให้เข้าใจสภาพโรค วิธีการรักษา ผลข้างเคียงที่อาจเกิดขึ้น และแนวทางการดูแลตนเองอย่างถูกต้องและปลอดภัย' },
+        { num: 2, title: 'การเตรียมตัวก่อนการรักษา', content: 'ผู้ป่วยควรได้รับข้อมูลเกี่ยวกับขั้นตอนการรักษา การผ่าตัดหรือหัตถการที่กำลังจะได้รับ ข้อปฏิบัติ เช่น การงดอาหาร/น้ำก่อนการผ่าตัด การหยุดหรือปรับยาบางชนิด และการเตรียมเอกสารหรือผู้ติดตาม เพื่อเตรียมพร้อมทั้งร่างกายและจิตใจ' },
+        { num: 3, title: 'การมีส่วนร่วมในการรักษา', content: 'ผู้ป่วยควรถามข้อสงสัย แจ้งประวัติ การแพ้ยา และยาที่ใช้อยู่กับทีมรักษา การมีส่วนร่วมของผู้ป่วยช่วยให้การตัดสินใจทางการแพทย์เป็นไปอย่างรอบคอบและการรักษามีประสิทธิภาพมากขึ้น ควรปฏิบัติตามคำแนะนำและนัดหมายติดตามผล' },
+        { num: 4, title: 'การดูแลตนเองหลังการรักษา', content: 'หลังการรักษา ผู้ป่วยควรปฏิบัติตามคำแนะนำเรื่องการรับประทานยา การดูแลแผล โภชนาการ การพักผ่อน และการค่อย ๆ เพิ่มกิจกรรมตามคำแนะนำ สังเกตอาการผิดปกติและติดต่อทีมรักษาเมื่อมีข้อสงสัยหรืออาการที่น่าเป็นห่วง' }
+      ]
+    },
+    or: {
+      title: 'OR Safety Protocol',
+      chapters: [
+        { num: 1, title: 'ความปลอดภัยในห้องผ่าตัด', content: 'OR Safety Protocol คือชุดแนวทางและขั้นตอนปฏิบัติที่ออกแบบมาเพื่อป้องกันความผิดพลาด ลดความเสี่ยง และเพิ่มความปลอดภัยให้แก่ผู้ป่วยในระหว่างการผ่าตัด เช่น การจัดการความสะอาด การควบคุมการติดเชื้อ และการสื่อสารในทีมผ่าตัด' },
+        { num: 2, title: 'การยืนยันตัวตนผู้ป่วย', content: 'ก่อนการผ่าตัด ทีมแพทย์และพยาบาลจะยืนยันตัวตนผู้ป่วยด้วยการตรวจชื่อ-นามสกุล วันเดือนปีเกิด และตรวจสอบเอกสารยินยอมการผ่าตัด ตรวจหมายแสดงตัวผู้ป่วย และทำการทำเครื่องหมายตำแหน่งผ่าตัดหากจำเป็น เพื่อป้องกันการทำหัตถการผิดตำแหน่งหรือให้ผู้ป่วยผิดคน' },
+        { num: 3, title: 'การตรวจสอบก่อนเริ่มผ่าตัด', content: 'ก่อนเริ่มผ่าตัดจะมีการประชุมสั้นของทีมผ่าตัด (time-out) เพื่อยืนยันชนิดและตำแหน่งการผ่าตัด สถานะของผู้ป่วย การเตรียมอุปกรณ์และเครื่องมือ ยาความดันโลหิต ยาชา และการเตรียมเลือดหรืออุปกรณ์ฉุกเฉินที่จำเป็น การตรวจสอบเหล่านี้ช่วยลดความเสี่ยงจากความผิดพลาด' },
+        { num: 4, title: 'ความปลอดภัยระหว่างและหลังผ่าตัด', content: 'ระหว่างการผ่าตัด ทีมแพทย์และพยาบาลจะติดตามสัญญาณชีพและสภาวะผู้ป่วยอย่างใกล้ชิด รักษาความเป็นปลอดเชื้อและนับอุปกรณ์เครื่องมือก่อน–หลังการผ่าตัด หลังผ่าตัดมีการส่งต่อผู้ป่วยไปยังหอผู้ป่วยพักฟื้น (PACU) พร้อมรายงานสรุปสถานะและคำแนะนำในการติดตาม เพื่อให้การฟื้นตัวเป็นไปอย่างปลอดภัยและต่อเนื่อง' }
+      ]
+    }
+  };
+
+  // Initialize
+  function init() {
+    quill = new Quill('#editor-container', {
+      theme: 'snow',
+      modules: { toolbar: [['bold', 'italic', 'underline'], ['link'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]] }
+    });
+    loadSection('postop');
+    loadHistory();
+    updateSectionList();
+  }
+
+  function switchSection(section) {
+    currentSection = section;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(section + '-content').classList.add('active');
+    loadSection(section);
+  }
+
+  function loadSection(section) {
+    const content = bookContent[section];
+    const chapters = content.chapters.map(ch => `<h3>บทที่ ${ch.num}: ${ch.title}</h3><p>${ch.content}</p>`).join('<hr>');
+    quill.root.innerHTML = chapters;
+  }
+
+  function updateSectionList() {
+    const list = document.getElementById('section-list');
+    list.innerHTML = Object.keys(bookContent).map(key => {
+      const title = { postop: '🏥 หลังผ่าตัด', patient: '👤 Patient Edu', or: '⚕️ OR Safety' }[key];
+      return `<button class="section-btn ${key === currentSection ? 'active' : ''}" onclick="switchSection('${key}')">${title}</button>`;
+    }).join('');
+  }
+
+  function saveChanges() {
+    const content = quill.root.innerHTML;
+    editCount++;
+    editHistory.unshift({ section: currentSection, time: new Date().toLocaleTimeString('th-TH'), content: content.substring(0, 50) + '...' });
+    if (editHistory.length > 10) editHistory.pop();
+    localStorage.setItem('bookEdits_' + currentSection, content);
+    localStorage.setItem('editHistory', JSON.stringify(editHistory));
+    localStorage.setItem('editCount', editCount);
+
+    // บันทึกไปเซิร์ฟเวอร์ด้วย
+    saveToServer(content);
+
+    showToast('บันทึกการเปลี่ยนแปลงสำเร็จ! ✓', 'success');
+    updateStats();
+  }
+
+  async function saveToServer(content) {
+    try {
+      const response = await fetch('/api/book-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          section: currentSection,
+          content: content.substring(0, 200),
+          chapterNum: null,
+          chapterTitle: 'Full Content Edit'
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Saved to server:', data);
+      }
+    } catch (e) {
+      console.error('Failed to save to server:', e);
+    }
+  }
+
+  function loadHistory() {
+    const saved = localStorage.getItem('editHistory');
+    editHistory = saved ? JSON.parse(saved) : [];
+    editCount = parseInt(localStorage.getItem('editCount') || '0');
+    updateStats();
+    updateHistoryList();
+  }
+
+  function updateStats() {
+    document.getElementById('edit-count').textContent = editCount;
+  }
+
+  function updateHistoryList() {
+    const list = document.getElementById('history-list');
+    list.innerHTML = editHistory.map((item, idx) => 
+      `<div class="history-item" title="${item.section}"><div class="history-item-section">${item.section}</div><div class="history-item-time">${item.time}</div></div>`
+    ).join('');
+  }
+
+  function previewContent() {
+    document.getElementById('previewContent').innerHTML = quill.root.innerHTML;
+    document.getElementById('previewModal').style.display = 'block';
+  }
+
+  function showToast(msg, type) {
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = msg;
+    document.getElementById('toastContainer').appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  init();
+</script>
+</body>
+</html>
