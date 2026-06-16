@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SurgCare Edu - Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+  :root {
+    --p: #534AB7; --pl: #7B74D4; --pd: #3D368A;
+    --bg: #EEEEFF; --bgc: #FFFFFF; --bgi: #F0EFFF;
+    --t1: #1A1835; --t2: #6B7280;
+    --br: rgba(83,74,183,.14);
+    --g: #1D9E75; --r: #C62828; --o: #BA7517;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans Thai', sans-serif; background: var(--bg); color: var(--t1); padding: 20px 10px 40px; }
+  .container { max-width: 860px; margin: 0 auto; background: var(--bgc); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(83,74,183,.12); }
+  h1 { color: var(--p); text-align: center; margin-bottom: 24px; font-weight: 800; font-size: 22px; }
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px; color: var(--t2); text-transform: uppercase; letter-spacing: .4px; }
+  input, select, textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--br); border-radius: 12px; font-family: inherit; font-size: 15px; transition: border-color 0.2s; background: #fafafa; color: var(--t1); }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p); background: #fff; }
+  button { padding: 14px; background: var(--p); color: #fff; border: none; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; }
+  button:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+  .btn-block { width: 100%; display: block; margin-top: 10px; }
+  .toast { padding: 16px; border-radius: 12px; margin-bottom: 20px; display: none; font-weight: 700; text-align: center; }
+  .toast.success { background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; }
+  .toast.error { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+  .help-text { font-size: 12px; color: var(--t2); margin-top: 4px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; background: #EEEEFF; padding: 6px; border-radius: 14px; flex-wrap: wrap; }
+  .tab-btn { flex: 1; min-width: 90px; padding: 11px 8px; background: transparent; color: var(--p); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all .2s; font-size: 13px; }
+  .tab-btn.active { background: var(--p); color: #fff; box-shadow: 0 4px 12px rgba(83,74,183,.3); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .q-card { background: #f8f8ff; padding: 20px; border-radius: 14px; border: 1.5px solid var(--br); margin-bottom: 16px; position: relative; }
+  .q-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .q-num { background: var(--p); color: #fff; font-weight: 800; font-size: 13px; padding: 4px 12px; border-radius: 20px; }
+  .del-btn { width: auto !important; padding: 6px 14px !important; background: #C62828 !important; margin: 0 !important; font-size: 13px !important; }
+  .del-btn:hover { background: #B71C1C !important; transform: none !important; }
+  .edit-btn { width: auto !important; padding: 6px 14px !important; background: var(--o) !important; margin: 0 !important; font-size: 13px !important; }
+  .opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .sect-title { font-size: 17px; font-weight: 800; color: var(--p); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--br); }
+  .hint-box { background: #EEF2FF; border-left: 4px solid var(--p); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--t2); margin-bottom: 16px; line-height: 1.6; }
+  .add-btn { background: #1D9E75 !important; }
+  .save-btn { background: #534AB7 !important; }
+  #ql-container .ql-editor { min-height: 260px; font-family: 'Noto Sans Thai', sans-serif; font-size: 15px; }
+
+  /* Video List */
+  .video-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .video-item { background: #f8f8ff; border: 1.5px solid var(--br); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .video-item-info { flex: 1; min-width: 0; }
+  .video-item-title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .video-item-sub { font-size: 12px; color: var(--t2); margin-top: 2px; }
+  .sd-preview { white-space: pre-wrap; word-break: break-word; font-size: 12px; color: var(--t2); max-height: 3.2em; overflow: hidden; }
+  .video-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .video-item-actions button { padding: 7px 14px; font-size: 12px; margin: 0; border-radius: 8px; }
+
+  /* Book/Quiz management */
+  .bk-list, .quiz-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .bk-item, .quiz-item { background: #f8f8ff; border: 1.5px solid var(--br); border-radius: 14px; padding: 14px 16px; }
+  .bk-item-header, .quiz-item-header { display: flex; align-items: center; gap: 10px; }
+  .bk-item-info, .quiz-item-info { flex: 1; min-width: 0; }
+  .bk-item-title, .quiz-item-title { font-size: 14px; font-weight: 700; }
+  .bk-item-sub, .quiz-item-sub { font-size: 12px; color: var(--t2); margin-top: 2px; }
+  .bk-item-actions, .quiz-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .bk-item-actions button, .quiz-item-actions button { padding: 7px 14px; font-size: 12px; margin: 0; border-radius: 8px; }
+
+  /* Edit modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.hidden { display: none; }
+  .modal-box { background: var(--bgc); border-radius: 20px; padding: 28px 24px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(83,74,183,.25); }
+  .modal-title { font-size: 18px; font-weight: 800; color: var(--p); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--br); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-actions button { flex: 1; padding: 12px; }
+  .btn-cancel { background: #eee; color: var(--t1); }
+  .btn-cancel:hover { background: #e0e0e0; filter: none; transform: none; }
+
+  .subj-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--bgi); color: var(--p); }
+  .divider { border: none; border-top: 2px solid var(--br); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<div id="editModal" class="modal-overlay hidden">
+  <div class="modal-box" id="editModalContent"></div>
+</div>
+
+<div class="container">
+  <h1>⚙️ ระบบจัดการแอป (Admin)</h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-vid" onclick="showTab('vid')">🎥 เพิ่มวิดีโอ</button>
+    <button class="tab-btn" id="tab-vidlist" onclick="showTab('vidlist')">📋 จัดการวิดีโอ</button>
+    <button class="tab-btn" id="tab-bk" onclick="showTab('bk')">📚 หนังสือ</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">📝 แบบทดสอบ</button>
+    <button class="tab-btn" id="tab-reset" onclick="showTab('reset')">🔄 รีเซ็ต User</button>
+  </div>
+
+  <div id="msg" class="toast"></div>
+
+  <!-- ── TAB: เพิ่มวิดีโอ ── -->
+  <div id="content-vid" class="tab-content active">
+    <form id="adminForm">
+    <div class="form-group" style="display:flex;gap:15px;margin-bottom:20px;background:#f9f9ff;padding:12px;border-radius:12px;border:1px solid var(--br);">
+      <label style="margin:0;cursor:pointer;"><input type="radio" name="videoType" value="youtube" checked onchange="toggleType()"> ลิงก์ YouTube</label>
+      <label style="margin:0;cursor:pointer;"><input type="radio" name="videoType" value="file" onchange="toggleType()"> อัปโหลดไฟล์จากเครื่อง</label>
+    </div>
+    <div class="form-group" id="ytGroup">
+      <label>ลิงก์ YouTube (URL)</label>
+      <input type="url" id="ytUrl" placeholder="เช่น https://www.youtube.com/watch?v=J1rK7s0iR94" onchange="extractId()">
+      <div class="help-text" id="idHint"></div>
+    </div>
+    <div class="form-group" id="fileGroup" style="display:none;">
+      <label>ไฟล์วิดีโอ (.mp4, .mov ฯลฯ)</label>
+      <input type="file" id="videoFile" accept="video/*">
+    </div>
+    <div class="form-group">
+      <label>วิชา</label>
+      <select id="subject" required>
+        <option value="preop">📝 ก่อนผ่าตัด</option>
+        <option value="intraop">😷 ขณะผ่าตัด</option>
+        <option value="postop">🛌 หลังผ่าตัด</option>
+        <option value="comm">💬 สื่อสารผู้ป่วย</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>ชื่อวิดีโอ (Title)</label>
+      <input type="text" id="title" required placeholder="เช่น สรุปการแยกตัวประกอบ">
+    </div>
+    <div class="form-group">
+      <label>คำอธิบาย (Description)</label>
+      <textarea id="desc" rows="3" placeholder="คำอธิบายเต็มที่แสดงในหน้ารายละเอียด (ย่อหน้า/หลายบรรทัด)"></textarea>
+    </div>
+    <div class="form-group">
+      <label>คำอธิบายสั้น (Preview)</label>
+      <textarea id="shortDesc" rows="2" placeholder="คำอธิบายสั้นสำหรับแสดงใต้คลิปในหน้ารวม"></textarea>
+    </div>
+    <input type="hidden" id="videoId">
+    <button type="submit" id="submitBtn" class="btn-block">💾 บันทึกวิดีโอลงระบบ</button>
+  </form>
+  </div>
+
+  <!-- ── TAB: จัดการวิดีโอ ── -->
+  <div id="content-vidlist" class="tab-content">
+    <div class="sect-title">📋 รายการวิดีโอทั้งหมด</div>
+    <div class="hint-box">💡 กด <strong>✏️ แก้ไข</strong> เพื่อเปลี่ยนชื่อ, วิชา หรือคำอธิบาย กด <strong>🗑️ ลบ</strong> เพื่อนำวิดีโอออกจากระบบ</div>
+    <div id="videoListContainer" class="video-list">
+      <div style="text-align:center;color:var(--t2);padding:20px">กำลังโหลด...</div>
+    </div>
+  </div>
+
+  <!-- ── TAB: จัดการหนังสือ ── -->
+  <div id="content-bk" class="tab-content">
+    <div class="sect-title">📚 จัดการเนื้อหาหนังสือ</div>
+    <div class="hint-box">💡 เลือกหนังสือที่ต้องการแก้ไข แล้วพิมพ์หรือแก้ไขเนื้อหาได้เลยเหมือนพิมพ์ใน Microsoft Word กด <strong>💾 บันทึก</strong> เมื่อเสร็จ</div>
+
+    <!-- จัดการหนังสือ (แก้ไข / ลบ) -->
+    <div class="sect-title" style="font-size:14px;margin-bottom:12px;">📖 รายการหนังสือ</div>
+    <div id="bookListContainer" class="bk-list">
+      <div style="text-align:center;color:var(--t2);padding:20px">กำลังโหลด...</div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- แก้ไขเนื้อหา -->
+    <div class="sect-title" style="font-size:14px;margin-bottom:12px;">✏️ แก้ไขเนื้อหาหนังสือ</div>
+    <div class="form-group">
+      <label>เลือกหนังสือ</label>
+        <select id="bkSelect" onchange="onBkChange()"></select>
+      </div>
+      <div class="form-group">
+        <label>บท (Chapter)</label>
+        <select id="bkChapter" onchange="loadBookContent()"></select>
+    </div>
+    <div class="form-group">
+      <label>เนื้อหาหนังสือ</label>
+      <div id="quillEditor" style="background:#fff; border-radius: 0 0 10px 10px;"></div>
+    </div>
+    <button onclick="saveBookContent()" id="saveBkBtn" class="save-btn btn-block">💾 บันทึกเนื้อหาหนังสือ</button>
+  </div>
+
+  <!-- ── TAB: จัดการแบบทดสอบ ── -->
+  <div id="content-quiz" class="tab-content">
+    <div class="sect-title">📝 จัดการแบบทดสอบ</div>
+    <div class="hint-box">💡 เลือกชุดแบบทดสอบ แล้วแก้ไขคำถาม ตัวเลือก และเฉลยได้เลย หรือกด <strong>➕ เพิ่มข้อใหม่</strong> เพื่อเพิ่มคำถาม</div>
+
+    <!-- จัดการชุดแบบทดสอบ -->
+    <div class="sect-title" style="font-size:14px;margin-bottom:12px;">🗂️ รายการชุดแบบทดสอบ</div>
+    <div id="quizSetListContainer" class="quiz-list">
+      <div style="text-align:center;color:var(--t2);padding:20px">กำลังโหลด...</div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- แก้ไขคำถาม -->
+    <div class="sect-title" style="font-size:14px;margin-bottom:12px;">✏️ แก้ไขคำถาม</div>
+    <div class="form-group">
+      <label>ชุดแบบทดสอบ</label>
+      <select id="quizSelect" onchange="loadQuizContent()"></select>
+    </div>
+    <div id="quizContainer"></div>
+    <button onclick="addQuestion()" class="add-btn btn-block">➕ เพิ่มคำถามใหม่</button>
+    <button onclick="saveQuizContent()" id="saveQuizBtn" class="save-btn btn-block" style="margin-top:8px">💾 บันทึกแบบทดสอบ</button>
+  </div>
+
+  <!-- ── TAB: รีเซ็ต User ── -->
+  <div id="content-reset" class="tab-content">
+    <div class="sect-title">🔄 รีเซ็ตข้อมูลผู้ใช้</div>
+    <div class="hint-box">⚠️ การรีเซ็ต user จะลบข้อมูลทั้งหมด (XP, เลเวล, เป้าหมาย, ประวัติแบบทดสอบ) และกลับไปเป็น starter user ตั้งแต่ต้น</div>
+    
+    <button onclick="resetCurrentUserLocalStorage()" class="del-btn btn-block" style="background:#C62828 !important;height:50px;font-size:16px;margin-top:20px">🗑️ รีเซ็ต User ปัจจุบัน (Browser นี้)</button>
+    
+    <div style="margin-top:30px;padding:20px;background:#f0f8ff;border-radius:12px;border-left:4px solid #1D9E75;">
+      <p style="font-size:14px;color:var(--t1);margin-bottom:8px;font-weight:700">💡 ขั้นตอน:</p>
+      <ol style="margin-left:20px;color:var(--t2);font-size:13px;line-height:1.8;">
+        <li>กด <strong>🗑️ รีเซ็ต User ปัจจุบัน</strong> ด้านบน</li>
+        <li>หน้าเว็บจะรีโหลด และเก็บข้อมูลไปเหลือ 0 ทั้งหมด</li>
+        <li>ผู้ใช้จะกลับมาเป็น Level 1, XP 0 และเป็นเหมือน Starter User ใหม่</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+let CONFIG = {};
+let VIDEOS = [];
+let quill;
+
+const SUBJ_LABELS = {
+  preop:   { n: 'ก่อนผ่าตัด',   ic: '📝' },
+  intraop: { n: 'ขณะผ่าตัด',   ic: '😷' },
+  postop:  { n: 'หลังผ่าตัด',  ic: '🛌' },
+  comm:    { n: 'สื่อสารผู้ป่วย', ic: '💬' },
+  all:     { n: 'ทั้งหมด',      ic: '📋' },
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  quill = new Quill('#quillEditor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'header': [1, 2, 3, false] }],
+        [{ 'color': [] }, { 'background': [] }],
+        ['clean']
+      ]
+    }
+  });
+  await loadAll();
+  // If URL contains editBook and chapter, open Books tab and select
+  try{
+    const params = new URLSearchParams(location.search);
+    const editBook = params.get('editBook');
+    const chapter = params.get('chapter') || '1';
+    if(editBook){
+      showTab('bk');
+      // populate bkSelect first
+      const bkSel = document.getElementById('bkSelect');
+      if([...bkSel.options].some(o=>o.value===editBook)) bkSel.value = editBook;
+      onBkChange();
+      const bkChapter = document.getElementById('bkChapter');
+      if([...bkChapter.options].some(o=>o.value===chapter)) bkChapter.value = chapter;
+      loadBookContent();
+      // focus editor
+      document.getElementById('quillEditor').scrollIntoView({behavior:'smooth'});
+    }
+  }catch(e){}
+});
+
+async function loadAll() {
+  await loadFullConfig();
+  await loadVideos();
+}
+
+// ──────────────────────────────────────────────
+// CONFIG / BOOKS / QUIZ
+// ──────────────────────────────────────────────
+async function loadFullConfig() {
+  try {
+    const res = await fetch('/api/config');
+    CONFIG = await res.json();
+
+    // Books dropdown (use book id as value)
+    const bkSel = document.getElementById('bkSelect');
+    bkSel.innerHTML = '';
+    (CONFIG.BKS || []).forEach(b => {
+      bkSel.innerHTML += `<option value="${b.id}">${b.t}</option>`;
+    });
+    // populate chapter selector
+    const bkChapter = document.getElementById('bkChapter');
+    bkChapter.innerHTML = '';
+    const firstBook = (CONFIG.BKS || [])[0];
+    if(firstBook){
+      for(let i=1;i<=firstBook.ch;i++) bkChapter.innerHTML += `<option value="${i}">${i}</option>`;
+    }
+    loadBookContent();
+
+    // Quiz dropdown
+    const qzSel = document.getElementById('quizSelect');
+    qzSel.innerHTML = '';
+    (CONFIG.QS || []).forEach(q => {
+      qzSel.innerHTML += `<option value="${q.id}">${q.t}</option>`;
+    });
+    loadQuizContent();
+
+    renderBookList();
+    renderQuizSetList();
+  } catch(e) {
+    showMsg('Error loading config', false);
+  }
+}
+
+// ──────────────────────────────────────────────
+// VIDEO API
+// ──────────────────────────────────────────────
+async function loadVideos() {
+  try {
+    const res = await fetch('/api/videos');
+    VIDEOS = await res.json();
+    renderVideoList();
+  } catch(e) {
+    document.getElementById('videoListContainer').innerHTML =
+      '<div style="color:var(--r);text-align:center;padding:20px">ไม่สามารถโหลดรายการวิดีโอได้</div>';
+  }
+}
+
+function renderVideoList() {
+  const cont = document.getElementById('videoListContainer');
+  if (!VIDEOS.length) {
+    cont.innerHTML = '<div style="text-align:center;color:var(--t2);padding:20px">ยังไม่มีวิดีโอในระบบ</div>';
+    return;
+  }
+  cont.innerHTML = VIDEOS.map((v, i) => {
+    const sb = SUBJ_LABELS[v.s] || { n: v.s, ic: '🎥' };
+    const typeLabel = v.ytId ? '▶ YouTube' : v.fileUrl ? '📁 ไฟล์ท้องถิ่น' : '🎥';
+    return `<div class="video-item" id="vi-${i}">
+      <div style="font-size:28px;flex-shrink:0">${sb.ic}</div>
+      <div class="video-item-info">
+        <div class="video-item-title">${v.t}</div>
+        <div class="video-item-sub">
+          <span class="subj-badge">${sb.n}</span>
+          <span style="margin-left:6px;font-size:11px">${typeLabel}</span>
+          ${v.sd ? `<div class="sd-preview" style="margin-left:6px">${escHtml(v.sd).replace(/\n/g,'<br>')}</div>` : ''}
+        </div>
+      </div>
+      <div class="video-item-actions">
+        <button class="edit-btn" onclick="openEditVideo('${v.id}')">✏️ แก้ไข</button>
+        <button class="edit-btn" onclick="openVideoLink('${v.ytId||''}','${v.fileUrl||''}')">🔗 เปิด</button>
+        <button class="del-btn" onclick="confirmDeleteVideo('${v.id}','${escHtml(v.t)}')">🗑️ ลบ</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openVideoLink(ytId, fileUrl){
+  if(ytId){
+    window.open('https://www.youtube.com/watch?v='+ytId, '_blank');
+    return;
+  }
+  if(fileUrl){
+    window.open(fileUrl, '_blank');
+    return;
+  }
+  alert('ไม่พบลิงก์วิดีโอ');
+}
+
+async function confirmDeleteVideo(id, title) {
+  if (!confirm(`ยืนยันการลบวิดีโอ:\n"${title}" ?`)) return;
+  try {
+    const res = await fetch(`/api/videos/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg('✅ ลบวิดีโอสำเร็จ', true);
+      await loadVideos();
+    } else {
+      showMsg('❌ ' + data.error, false);
+    }
+  } catch(e) {
+    showMsg('❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', false);
+  }
+}
+
+function openEditVideo(id) {
+  const v = VIDEOS.find(x => x.id === id);
+  if (!v) return;
+  const subjOptions = Object.entries(SUBJ_LABELS).filter(([k]) => k !== 'all').map(([k, s]) =>
+    `<option value="${k}" ${v.s === k ? 'selected' : ''}>${s.ic} ${s.n}</option>`
+  ).join('');
+
+  document.getElementById('editModalContent').innerHTML = `
+    <div class="modal-title">✏️ แก้ไขวิดีโอ</div>
+    <div class="form-group">
+      <label>วิชา</label>
+      <select id="ev_subj">${subjOptions}</select>
+    </div>
+    <div class="form-group">
+      <label>ชื่อวิดีโอ</label>
+      <input type="text" id="ev_title" value="${escHtml(v.t)}">
+    </div>
+    <div class="form-group">
+      <label>คำอธิบาย</label>
+      <textarea id="ev_desc" rows="3">${escHtml(v.d || '')}</textarea>
+    </div>
+    <div class="form-group">
+      <label>คำอธิบายสั้น (Preview)</label>
+      <textarea id="ev_sd" rows="2">${escHtml(v.sd || '')}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Video ID / YouTube URL</label>
+      <input type="text" id="ev_yt" value="${escHtml(v.ytId || '')}" placeholder="วาง YouTube ID หรือ URL เพื่อแก้ไขลิงก์">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="save-btn" onclick="saveEditVideo('${id}')">💾 บันทึก</button>
+    </div>`;
+  openModal();
+}
+
+async function saveEditVideo(id) {
+  const t  = document.getElementById('ev_title').value.trim();
+  const s  = document.getElementById('ev_subj').value;
+  const d  = document.getElementById('ev_desc').value.trim();
+  const sd = document.getElementById('ev_sd').value.trim();
+  const evYt = document.getElementById('ev_yt').value.trim();
+  // Normalize YouTube ID/URL
+  function normalizeYtId(input){
+    if(!input) return '';
+    const s = input.trim();
+    // plain id (11 chars)
+    if(/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+    try{
+      // try URL parsing
+      const u = new URL(s.includes('://')?s:'https://'+s);
+      // check common patterns
+      // /watch?v=ID
+      if(u.searchParams && u.searchParams.get('v') && /^[A-Za-z0-9_-]{11}$/.test(u.searchParams.get('v')))
+        return u.searchParams.get('v');
+      // /embed/ID or /v/ID or /shorts/ID or youtu.be/ID
+      const m = u.pathname.match(/(?:embed\/|v\/|shorts\/|\/)([A-Za-z0-9_-]{11})/);
+      if(m && m[1]) return m[1];
+    }catch(e){}
+    // last resort: regex anywhere
+    const any = s.match(/([A-Za-z0-9_-]{11})/);
+    return any?any[1]:null;
+  }
+  if (!t) { alert('กรุณากรอกชื่อวิดีโอ'); return; }
+  let normalizedYt;
+  if(evYt){
+    normalizedYt = normalizeYtId(evYt);
+    if(normalizedYt === null){
+      alert('ไม่พบ YouTube ID ใน URL/ค่าที่ใส่ กรุณาตรวจสอบ');
+      return;
+    }
+  }
+
+  try {
+    const payload = { t, s, d, sd };
+    if(evYt) payload.ytId = normalizedYt;
+    const res = await fetch(`/api/videos/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg('✅ แก้ไขวิดีโอสำเร็จ', true);
+      closeModal();
+      await loadVideos();
+    } else {
+      showMsg('❌ ' + data.error, false);
+    }
+  } catch(e) {
+    showMsg('❌ แก้ไขไม่สำเร็จ: ' + e.message, false);
+  }
+}
+
+// ──────────────────────────────────────────────
+// BOOK MANAGEMENT
+// ──────────────────────────────────────────────
+function renderBookList() {
+  const cont = document.getElementById('bookListContainer');
+  const books = CONFIG.BKS || [];
+  if (!books.length) {
+    cont.innerHTML = '<div style="text-align:center;color:var(--t2);padding:20px">ยังไม่มีหนังสือในระบบ</div>';
+    return;
+  }
+  cont.innerHTML = books.map((b, i) => {
+    const sb = SUBJ_LABELS[b.s] || { n: b.s, ic: '📖' };
+    return `<div class="bk-item">
+      <div class="bk-item-header">
+        <div style="font-size:26px">${sb.ic}</div>
+        <div class="bk-item-info">
+          <div class="bk-item-title">${b.t}</div>
+          <div class="bk-item-sub">${b.a} · ${b.ch} บท · <span class="subj-badge">${sb.n}</span></div>
+        </div>
+        <div class="bk-item-actions">
+          <button class="edit-btn" onclick="openEditBook('${b.id}')">✏️ แก้ไข</button>
+          <button class="del-btn" onclick="confirmDeleteBook('${b.id}','${escHtml(b.t)}')">🗑️ ลบ</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEditBook(id) {
+  const b = (CONFIG.BKS || []).find(x => x.id === id);
+  if (!b) return;
+  const subjOptions = Object.entries(SUBJ_LABELS).filter(([k]) => k !== 'all').map(([k, s]) =>
+    `<option value="${k}" ${b.s === k ? 'selected' : ''}>${s.ic} ${s.n}</option>`
+  ).join('');
+
+  document.getElementById('editModalContent').innerHTML = `
+    <div class="modal-title">✏️ แก้ไขข้อมูลหนังสือ</div>
+    <div class="form-group">
+      <label>ชื่อหนังสือ</label>
+      <input type="text" id="eb_title" value="${escHtml(b.t)}">
+    </div>
+    <div class="form-group">
+      <label>ผู้แต่ง</label>
+      <input type="text" id="eb_author" value="${escHtml(b.a || '')}">
+    </div>
+    <div class="form-group">
+      <label>จำนวนบท</label>
+      <input type="number" id="eb_ch" min="1" max="20" value="${b.ch}">
+    </div>
+    <div class="form-group">
+      <label>วิชา</label>
+      <select id="eb_subj">${subjOptions}</select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="save-btn" onclick="saveEditBook('${id}')">💾 บันทึก</button>
+    </div>`;
+  openModal();
+}
+
+async function saveEditBook(id) {
+  const t  = document.getElementById('eb_title').value.trim();
+  const a  = document.getElementById('eb_author').value.trim();
+  const ch = parseInt(document.getElementById('eb_ch').value) || 1;
+  const s  = document.getElementById('eb_subj').value;
+  if (!t) { alert('กรุณากรอกชื่อหนังสือ'); return; }
+
+  const idx = (CONFIG.BKS || []).findIndex(x => x.id === id);
+  if (idx === -1) return;
+  CONFIG.BKS[idx] = { ...CONFIG.BKS[idx], t, a, ch, s };
+  await pushConfig('แก้ไขข้อมูลหนังสือสำเร็จ');
+  closeModal();
+  renderBookList();
+  // refresh dropdown
+  const bkSel = document.getElementById('bkSelect');
+  bkSel.innerHTML = '';
+  (CONFIG.BKS || []).forEach(bk => {
+    bkSel.innerHTML += `<option value="${bk.id}">${bk.t}</option>`;
+  });
+}
+
+async function confirmDeleteBook(id, title) {
+  if (!confirm(`ยืนยันการลบหนังสือ:\n"${title}"\n\n* เนื้อหาในหนังสือจะถูกลบด้วย`)) return;
+  const idx = (CONFIG.BKS || []).findIndex(x => x.id === id);
+  if (idx === -1) return;
+  const b = CONFIG.BKS[idx];
+  CONFIG.BKS.splice(idx, 1);
+  // ลบ BKCONTENT ด้วย
+  if (CONFIG.BKCONTENT && CONFIG.BKCONTENT[b.s]) {
+    delete CONFIG.BKCONTENT[b.s];
+  }
+  await pushConfig('ลบหนังสือสำเร็จ');
+  renderBookList();
+  const bkSel = document.getElementById('bkSelect');
+  bkSel.innerHTML = '';
+  (CONFIG.BKS || []).forEach(bk => {
+    bkSel.innerHTML += `<option value="${bk.s}">${bk.t}</option>`;
+  });
+  loadBookContent();
+}
+
+function loadBookContent() {
+  const bookId = document.getElementById('bkSelect').value;
+  const chapter = document.getElementById('bkChapter').value || '1';
+  const book = (CONFIG.BKS || []).find(x=>x.id===bookId) || null;
+  // priority: specific book_chapter key, then fall back to subject key, else empty
+  const key1 = `${bookId}_${chapter}`;
+  const key2 = book ? book.s : null;
+  if (CONFIG.BKCONTENT && CONFIG.BKCONTENT[key1]) quill.root.innerHTML = CONFIG.BKCONTENT[key1];
+  else if (key2 && CONFIG.BKCONTENT && CONFIG.BKCONTENT[key2]) quill.root.innerHTML = CONFIG.BKCONTENT[key2];
+  else quill.root.innerHTML = '';
+}
+
+function onBkChange(){
+  const bookId = document.getElementById('bkSelect').value;
+  const book = (CONFIG.BKS || []).find(x=>x.id===bookId) || null;
+  const bkChapter = document.getElementById('bkChapter');
+  bkChapter.innerHTML='';
+  if(book){
+    for(let i=1;i<=book.ch;i++) bkChapter.innerHTML += `<option value="${i}">${i}</option>`;
+  }
+  loadBookContent();
+}
+
+async function saveBookContent() {
+  const bookId = document.getElementById('bkSelect').value;
+  const chapter = document.getElementById('bkChapter').value || '1';
+  const html = quill.root.innerHTML;
+  if (!CONFIG.BKCONTENT) CONFIG.BKCONTENT = {};
+  CONFIG.BKCONTENT[`${bookId}_${chapter}`] = html;
+  await pushConfig('บันทึกเนื้อหาหนังสือสำเร็จ');
+}
+
+// ──────────────────────────────────────────────
+// QUIZ MANAGEMENT
+// ──────────────────────────────────────────────
+function renderQuizSetList() {
+  const cont = document.getElementById('quizSetListContainer');
+  const sets = CONFIG.QS || [];
+  if (!sets.length) {
+    cont.innerHTML = '<div style="text-align:center;color:var(--t2);padding:20px">ยังไม่มีชุดแบบทดสอบ</div>';
+    return;
+  }
+  cont.innerHTML = sets.map((q, i) => {
+    const sb = SUBJ_LABELS[q.s] || { n: q.s, ic: '📝' };
+    const qCount = (CONFIG.QQ && CONFIG.QQ[q.id]) ? CONFIG.QQ[q.id].length : 0;
+    return `<div class="quiz-item">
+      <div class="quiz-item-header">
+        <div style="font-size:26px">${sb.ic}</div>
+        <div class="quiz-item-info">
+          <div class="quiz-item-title">${q.t}</div>
+          <div class="quiz-item-sub">${qCount} ข้อ · เวลา ${q.tm} วิ/ข้อ · <span class="subj-badge">${sb.n}</span></div>
+        </div>
+        <div class="quiz-item-actions">
+          <button class="edit-btn" onclick="openEditQuizSet('${q.id}')">✏️ แก้ไข</button>
+          <button class="del-btn" onclick="confirmDeleteQuizSet('${q.id}','${escHtml(q.t)}')">🗑️ ลบ</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEditQuizSet(id) {
+  const q = (CONFIG.QS || []).find(x => x.id === id);
+  if (!q) return;
+  const subjOptions = Object.entries(SUBJ_LABELS).map(([k, s]) =>
+    `<option value="${k}" ${q.s === k ? 'selected' : ''}>${s.ic} ${s.n}</option>`
+  ).join('');
+
+  document.getElementById('editModalContent').innerHTML = `
+    <div class="modal-title">✏️ แก้ไขชุดแบบทดสอบ</div>
+    <div class="form-group">
+      <label>ชื่อชุดแบบทดสอบ</label>
+      <input type="text" id="eq_title" value="${escHtml(q.t)}">
+    </div>
+    <div class="form-group">
+      <label>วิชา</label>
+      <select id="eq_subj">${subjOptions}</select>
+    </div>
+    <div class="form-group">
+      <label>เวลาต่อข้อ (วินาที)</label>
+      <input type="number" id="eq_tm" min="10" max="300" value="${q.tm}">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="save-btn" onclick="saveEditQuizSet('${id}')">💾 บันทึก</button>
+    </div>`;
+  openModal();
+}
+
+async function saveEditQuizSet(id) {
+  const t  = document.getElementById('eq_title').value.trim();
+  const s  = document.getElementById('eq_subj').value;
+  const tm = parseInt(document.getElementById('eq_tm').value) || 60;
+  if (!t) { alert('กรุณากรอกชื่อชุดแบบทดสอบ'); return; }
+
+  const idx = (CONFIG.QS || []).findIndex(x => x.id === id);
+  if (idx === -1) return;
+  CONFIG.QS[idx] = { ...CONFIG.QS[idx], t, s, tm };
+  await pushConfig('แก้ไขชุดแบบทดสอบสำเร็จ');
+  closeModal();
+  renderQuizSetList();
+  // refresh dropdown
+  const qzSel = document.getElementById('quizSelect');
+  qzSel.innerHTML = '';
+  (CONFIG.QS || []).forEach(qz => {
+    qzSel.innerHTML += `<option value="${qz.id}">${qz.t}</option>`;
+  });
+}
+
+async function confirmDeleteQuizSet(id, title) {
+  if (!confirm(`ยืนยันการลบชุดแบบทดสอบ:\n"${title}"\n\n* คำถามทั้งหมดในชุดนี้จะถูกลบด้วย`)) return;
+  const idx = (CONFIG.QS || []).findIndex(x => x.id === id);
+  if (idx === -1) return;
+  CONFIG.QS.splice(idx, 1);
+  if (CONFIG.QQ && CONFIG.QQ[id]) delete CONFIG.QQ[id];
+  await pushConfig('ลบชุดแบบทดสอบสำเร็จ');
+  renderQuizSetList();
+  const qzSel = document.getElementById('quizSelect');
+  qzSel.innerHTML = '';
+  (CONFIG.QS || []).forEach(qz => {
+    qzSel.innerHTML += `<option value="${qz.id}">${qz.t}</option>`;
+  });
+  loadQuizContent();
+}
+
+function loadQuizContent() {
+  const qId = document.getElementById('quizSelect').value;
+  const questions = (CONFIG.QQ && CONFIG.QQ[qId]) ? CONFIG.QQ[qId] : [];
+  renderQuizEditor(questions);
+}
+
+function renderQuizEditor(questions) {
+  const cont = document.getElementById('quizContainer');
+  cont.innerHTML = '';
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    const header = document.createElement('div');
+    header.className = 'q-card-header';
+    const num = document.createElement('span');
+    num.className = 'q-num';
+    num.textContent = `คำถามที่ ${i + 1}`;
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-btn';
+    delBtn.textContent = '🗑️ ลบข้อนี้';
+    delBtn.onclick = () => removeQuestion(i);
+    header.appendChild(num);
+    header.appendChild(delBtn);
+    card.appendChild(header);
+
+    const qLabel = document.createElement('label');
+    qLabel.textContent = 'คำถาม';
+    const qInput = document.createElement('input');
+    qInput.type = 'text';
+    qInput.id = `q_${i}_q`;
+    qInput.value = q.q || '';
+    qInput.style.marginBottom = '12px';
+    card.appendChild(qLabel);
+    card.appendChild(qInput);
+
+    const optsLabel = document.createElement('label');
+    optsLabel.textContent = 'ตัวเลือก (4 ข้อ)';
+    card.appendChild(optsLabel);
+    const grid = document.createElement('div');
+    grid.className = 'opts-grid';
+    for (let j = 0; j < 4; j++) {
+      const wrap = document.createElement('div');
+      const l = document.createElement('label');
+      l.textContent = `ตัวเลือก ${j + 1}`;
+      l.style.fontSize = '11px';
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.id = `q_${i}_o${j}`;
+      inp.value = (q.o && q.o[j]) || '';
+      inp.style.padding = '10px 12px';
+      wrap.appendChild(l);
+      wrap.appendChild(inp);
+      grid.appendChild(wrap);
+    }
+    card.appendChild(grid);
+
+    const aLabel = document.createElement('label');
+    aLabel.textContent = '✅ ข้อที่ถูกต้อง';
+    const aSelect = document.createElement('select');
+    aSelect.id = `q_${i}_a`;
+    aSelect.style.marginBottom = '12px';
+    for (let j = 0; j < 4; j++) {
+      const opt = document.createElement('option');
+      opt.value = j;
+      opt.textContent = `ตัวเลือก ${j + 1}`;
+      if (q.a === j) opt.selected = true;
+      aSelect.appendChild(opt);
+    }
+    card.appendChild(aLabel);
+    card.appendChild(aSelect);
+
+    const eLabel = document.createElement('label');
+    eLabel.textContent = '💬 คำอธิบายเฉลย';
+    const eArea = document.createElement('textarea');
+    eArea.id = `q_${i}_e`;
+    eArea.rows = 2;
+    eArea.value = q.e || '';
+    card.appendChild(eLabel);
+    card.appendChild(eArea);
+
+    cont.appendChild(card);
+  });
+}
+
+function addQuestion() {
+  const qId = document.getElementById('quizSelect').value;
+  if (!CONFIG.QQ) CONFIG.QQ = {};
+  if (!CONFIG.QQ[qId]) CONFIG.QQ[qId] = [];
+  CONFIG.QQ[qId].push({ q: "", o: ["", "", "", ""], a: 0, e: "" });
+  loadQuizContent();
+}
+
+function removeQuestion(index) {
+  if (!confirm('ยืนยันการลบคำถามข้อนี้?')) return;
+  const qId = document.getElementById('quizSelect').value;
+  CONFIG.QQ[qId].splice(index, 1);
+  loadQuizContent();
+}
+
+async function saveQuizContent() {
+  const qId = document.getElementById('quizSelect').value;
+  if (!CONFIG.QQ) CONFIG.QQ = {};
+  if (!CONFIG.QQ[qId]) CONFIG.QQ[qId] = [];
+  const len = CONFIG.QQ[qId].length;
+  for (let i = 0; i < len; i++) {
+    const qEl = document.getElementById(`q_${i}_q`);
+    if (!qEl) continue;
+    CONFIG.QQ[qId][i].q = qEl.value;
+    CONFIG.QQ[qId][i].o[0] = document.getElementById(`q_${i}_o0`).value;
+    CONFIG.QQ[qId][i].o[1] = document.getElementById(`q_${i}_o1`).value;
+    CONFIG.QQ[qId][i].o[2] = document.getElementById(`q_${i}_o2`).value;
+    CONFIG.QQ[qId][i].o[3] = document.getElementById(`q_${i}_o3`).value;
+    CONFIG.QQ[qId][i].a = parseInt(document.getElementById(`q_${i}_a`).value);
+    CONFIG.QQ[qId][i].e = document.getElementById(`q_${i}_e`).value;
+  }
+  const qsEntry = CONFIG.QS.find(q => q.id === qId);
+  if (qsEntry) qsEntry.n = CONFIG.QQ[qId].length;
+  await pushConfig('บันทึกแบบทดสอบสำเร็จ');
+}
+
+// ──────────────────────────────────────────────
+// VIDEO FORM (Add)
+// ──────────────────────────────────────────────
+function extractId() {
+  const url = document.getElementById('ytUrl').value;
+  let videoId = '';
+  try {
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    } else if (url.includes('youtube.com/watch')) {
+      const urlParams = new URLSearchParams(new URL(url).search);
+      videoId = urlParams.get('v');
+    }
+  } catch(e) {}
+  const idHint = document.getElementById('idHint');
+  const idInput = document.getElementById('videoId');
+  if (videoId) {
+    idHint.innerHTML = `✅ เจอ Video ID: <strong>${videoId}</strong>`;
+    idHint.style.color = '#2E7D32';
+    idInput.value = videoId;
+  } else {
+    idHint.textContent = '❌ ไม่พบ Video ID กรุณาตรวจสอบลิงก์';
+    idHint.style.color = '#C62828';
+    idInput.value = '';
+  }
+}
+
+function toggleType() {
+  const isYoutube = document.querySelector('input[name="videoType"]:checked').value === 'youtube';
+  document.getElementById('ytGroup').style.display = isYoutube ? 'block' : 'none';
+  document.getElementById('fileGroup').style.display = isYoutube ? 'none' : 'block';
+}
+
+document.getElementById('adminForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const isYoutube = document.querySelector('input[name="videoType"]:checked').value === 'youtube';
+  const formData = new FormData();
+  formData.append('s', document.getElementById('subject').value);
+  formData.append('t', document.getElementById('title').value);
+  formData.append('d', document.getElementById('desc').value);
+  formData.append('sd', document.getElementById('shortDesc').value);
+
+  if (isYoutube) {
+    const vId = document.getElementById('videoId').value;
+    if (!vId) { showMsg('กรุณาใส่ลิงก์ YouTube ที่ถูกต้อง', false); return; }
+    formData.append('ytId', vId);
+  } else {
+    const file = document.getElementById('videoFile').files[0];
+    if (!file) { showMsg('กรุณาเลือกไฟล์วิดีโอ', false); return; }
+    formData.append('videoFile', file);
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'กำลังบันทึก...';
+
+  try {
+    const res = await fetch('/api/videos', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg(`✅ ${data.message} (${data.video.t})`, true);
+      document.getElementById('adminForm').reset();
+      document.getElementById('idHint').innerHTML = '';
+      toggleType();
+      await loadVideos();
+    } else {
+      showMsg(`❌ Error: ${data.error}`, false);
+    }
+  } catch (err) {
+    showMsg('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 บันทึกวิดีโอลงระบบ';
+  }
+});
+
+// ──────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────
+function showMsg(text, isSuccess) {
+  const msg = document.getElementById('msg');
+  msg.textContent = text;
+  msg.className = `toast ${isSuccess ? 'success' : 'error'}`;
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 5000);
+}
+
+function showTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(`tab-${tabId}`).classList.add('active');
+  document.getElementById(`content-${tabId}`).classList.add('active');
+  if (tabId === 'bk') loadBookContent();
+  if (tabId === 'quiz') loadQuizContent();
+  if (tabId === 'vidlist') renderVideoList();
+}
+
+function resetCurrentUserLocalStorage() {
+  if (confirm('⚠️ คุณแน่ใจหรือไม่?\n\nจะลบข้อมูล User ทั้งหมด (XP, Level, เป้าหมาย ฯลฯ) เป็นเหมือน Starter User ใหม่\n\nการกระทำนี้ไม่สามารถยกเลิกได้!')) {
+    // ลบข้อมูล user จาก localStorage
+    localStorage.removeItem('lt_s');
+    
+    // แสดงข้อความสำเร็จ
+    const msgEl = document.getElementById('msg');
+    msgEl.textContent = '✅ ระบบรีเซ็ต User เสร็จสิ้น! กำลังรีโหลดหน้า...';
+    msgEl.className = 'toast success';
+    msgEl.style.display = 'block';
+    
+    // รีโหลดหน้าเว็บหลังจาก 1.5 วินาที
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+  }
+}
+
+async function pushConfig(successMsg) {
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(CONFIG)
+    });
+    if (res.ok) {
+      showMsg('✅ ' + successMsg, true);
+    } else {
+      showMsg('❌ บันทึกไม่สำเร็จ', false);
+    }
+  } catch(e) {
+    showMsg('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์', false);
+  }
+}
+
+function openModal() {
+  document.getElementById('editModal').classList.remove('hidden');
+}
+function closeModal() {
+  document.getElementById('editModal').classList.add('hidden');
+}
+
+// ปิด modal เมื่อคลิกพื้นหลัง
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+
+</body>
+</html>

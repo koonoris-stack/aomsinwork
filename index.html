@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>SurgCare Edu</title>
+<meta name="description" content="General Surgery Case Training สำหรับนักศึกษาแพทย์และแพทย์ฝึกหัด">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --p:#534AB7;--pl:#7B74D4;--pd:#3D368A;--pxl:rgba(83,74,183,.12);
+  --g:#1D9E75;--gl:#25C694;
+  --o:#BA7517;--ol:#E8921E;
+  --r:#E53935;
+  --bg:#EEEEFF;--bgc:#FFFFFF;--bgi:#F0EFFF;
+  --t1:#1A1835;--t2:#6B7280;--t3:#9CA3AF;
+  --br:rgba(83,74,183,.14);
+  --sh:0 2px 14px rgba(83,74,183,.12);
+  --shm:0 4px 24px rgba(83,74,183,.18);
+  --shl:0 8px 40px rgba(83,74,183,.24);
+  --rsm:10px;--rmd:16px;--rlg:24px;--rxl:32px;--rf:9999px;
+  --nav:70px;--f:'Noto Sans Thai',system-ui,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0E0D1A;--bgc:#19182C;--bgi:#211F35;
+    --t1:#F0EEFF;--t2:#9A94C0;--t3:#5A5580;
+    --br:rgba(83,74,183,.22);
+    --sh:0 2px 14px rgba(0,0,0,.35);
+    --shm:0 4px 24px rgba(0,0,0,.45);
+    --shl:0 8px 40px rgba(0,0,0,.55);
+  }
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;font-size:16px}
+body{font-family:var(--f);background:var(--bg);color:var(--t1);height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font-family:var(--f);cursor:pointer;border:none;outline:none}
+textarea,input{font-family:var(--f)}
+#app{max-width:390px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg)}
+#main{flex:1;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth}
+#main::-webkit-scrollbar{display:none}
+
+/* NAV */
+#nav{position:relative;z-index:50;height:var(--nav);display:flex;align-items:center;background:var(--bgc);border-top:1px solid var(--br);box-shadow:0 -4px 20px rgba(83,74,183,.08);padding:0 4px;flex-shrink:0}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px 6px;border-radius:var(--rmd);background:transparent;color:var(--t3);font-size:10px;font-weight:600;transition:all .2s}
+.nb .ni{width:36px;height:28px;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:var(--rsm);transition:all .2s}
+.nb.active{color:var(--p)}.nb.active .ni{background:var(--pxl);transform:translateY(-2px)}
+
+/* TOAST */
+#toasts{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;width:340px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:var(--rmd);font-size:14px;font-weight:700;color:#fff;box-shadow:var(--shl);animation:tIn .35s cubic-bezier(.34,1.56,.64,1),tOut .3s ease 2.7s forwards}
+.toast.xp{background:linear-gradient(135deg,var(--p),var(--pl))}.toast.badge{background:linear-gradient(135deg,var(--o),var(--ol))}.toast.lvl{background:linear-gradient(135deg,#6C3483,var(--pl))}
+@keyframes tIn{from{opacity:0;transform:translateY(-24px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes tOut{to{opacity:0;transform:translateY(-12px)}}
+
+/* MODAL */
+.ov{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px}
+.ov.h{display:none}
+.mbox{background:var(--bgc);border-radius:var(--rxl);padding:32px 24px;text-align:center;max-width:320px;width:100%;box-shadow:var(--shl);animation:bIn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes bIn{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+
+/* COMMON */
+.page{padding:0 0 24px;min-height:100%}
+.ph{background:linear-gradient(135deg,var(--p) 0%,var(--pl) 100%);padding:20px 20px 28px;color:#fff;border-radius:0 0 var(--rxl) var(--rxl);margin-bottom:-12px}
+.ph h1{font-size:22px;font-weight:800}.ph p{font-size:13px;opacity:.8;margin-top:4px}
+.bb{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.2);border:none;color:#fff;padding:8px 16px;border-radius:var(--rf);font-size:14px;font-weight:600;margin-bottom:16px;cursor:pointer;transition:all .2s}
+.bb:hover{background:rgba(255,255,255,.3)}
+.card{background:var(--bgc);border-radius:var(--rlg);padding:20px;border:1px solid var(--br);box-shadow:var(--sh)}
+.crow{background:var(--bgc);border-radius:var(--rlg);padding:14px 16px;border:1px solid var(--br);box-shadow:var(--sh);display:flex;align-items:center;gap:12px}
+.pt{height:8px;background:var(--bgi);border-radius:var(--rf);overflow:hidden}
+.pf{height:100%;border-radius:var(--rf);width:0%;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:var(--rf);font-size:12px;font-weight:600}
+.cp{background:var(--pxl);color:var(--p)}.cg{background:rgba(29,158,117,.12);color:var(--g)}.co{background:rgba(186,117,23,.12);color:var(--o)}
+.btn{border:none;border-radius:var(--rmd);padding:13px 22px;font-family:var(--f);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.bp{background:var(--p);color:#fff}.bp:hover{background:var(--pd);box-shadow:0 4px 16px rgba(83,74,183,.4)}
+.bg_{background:var(--g);color:#fff}.bo{background:var(--o);color:#fff}.bgh{background:var(--bgi);color:var(--t1)}
+.btn:active{transform:scale(.97)}
+.mq-wrap { display: flex; overflow: hidden; gap: 8px; padding: 0 0 16px 20px; width: 100%; position: relative; }
+.mq-track { display: flex; gap: 8px; flex-shrink: 0; animation: mq 12s linear infinite; }
+.mq-wrap:hover .mq-track, .mq-wrap:active .mq-track { animation-play-state: paused; }
+@keyframes mq { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-100% - 8px)); } }
+.pill{flex-shrink:0;padding:7px 16px;border-radius:var(--rf);background:var(--bgc);border:1.5px solid var(--br);font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .2s;font-family:var(--f)}
+.pill.active{background:var(--p);border-color:var(--p);color:#fff}
+
+/* ANIMATIONS */
+@keyframes sUp{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes shk{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes fUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.ac{animation:sUp .4s ease}.aw{animation:shk .4s ease}
+.marquee{overflow:hidden;white-space:nowrap}.marquee-text{display:inline-block;animation:scroll 15s linear infinite}
+
+/* Description formatting */
+.desc-pre{white-space:pre-wrap;word-break:break-word;line-height:2;letter-spacing:.3px;color:#2c2c2c;font-size:15px;padding:24px;background:#fafafa;border-radius:16px;border:3px solid rgba(83,74,183,.5);box-shadow:0 4px 12px rgba(83,74,183,.12)}
+.desc-preview{white-space:pre-wrap;word-break:break-word;line-height:1.6;letter-spacing:.2px;color:var(--t2);font-size:14px;max-height:3.2em;overflow:hidden}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="toasts"></div>
+  <div id="bmodal" class="ov h"></div>
+  <main id="main"></main>
+  <nav id="nav"></nav>
+</div>
+<script>
+// ── GLOBALS ───────────────────────────────────────────────────
+let SUBS=[], SM={}, VID=[], BKS=[], BKCONTENT={}, QS=[], QQ={}, LB=[], BDEFS=[];
+
+async function loadConfig() {
+  try {
+    const res = await fetch('/api/config');
+    const c = await res.json();
+    if(c.SUBS) {
+      SUBS = c.SUBS;
+      SM = Object.fromEntries(SUBS.filter(s=>s.id!=='all').map(s=>[s.id,s]));
+    }
+    if(c.BKS) BKS = c.BKS;
+    if(c.QS) QS = c.QS;
+    if(c.QQ) QQ = c.QQ;
+    if(c.LB) LB = c.LB;
+    if(c.BDEFS) {
+      BDEFS = c.BDEFS.map(b => ({
+        ...b, 
+        f: new Function('s', 'return ' + (b.f_expr || 'false'))
+      }));
+    }
+    if(c.BKCONTENT) {
+      BKCONTENT = {
+        ...c.BKCONTENT,
+        default: (b, n) => {
+          let text = c.BKCONTENT[b.s] || '';
+          return text.replace(/\{\{n\}\}/g, n).replace(/\{\{t\}\}/g, b.t);
+        }
+      };
+    }
+  } catch(e) {
+    console.error('Failed to load config', e);
+  }
+}
+
+// ── STATE ─────────────────────────────────────────────────
+const DEF={xp:0,lv:1,streak:1,ld:new Date().toDateString(),badges:[],vp:{},vc:0,bp:{},bc:0,qh:{},qc:0,gc:0,bw:0};
+let S=()=>{
+  try{
+    const sv=localStorage.getItem('lt_s');
+    if(sv){
+      const p=JSON.parse(sv);
+      const t=new Date().toDateString(),y=new Date(Date.now()-864e5).toDateString();
+      if(p.ld!==t){p.streak=(p.ld===y)?(p.streak||0)+1:1;p.ld=t;}
+      return {...DEF,...p};
+    }
+  }catch(e){}
+  return {...DEF};
+};
+let ST=S();
+const save=()=>localStorage.setItem('lt_s',JSON.stringify(ST));
+
+function lvInfo(){
+  const xpL=500,lv=Math.floor(ST.xp/xpL)+1,inL=ST.xp%xpL;
+  return{lv,inL,tot:xpL,pct:inL/xpL*100};
+}
+
+// คำนวณเปอร์เซ็นต์ความคืบหน้าของหัวข้อ (รวมวิดีโอและหนังสือ)
+function subjectPct(sid){
+  // วิดีโอ
+  const vids = VID.filter(v=>v.s===sid);
+  const books = BKS.filter(b=>b.s===sid);
+  const parts = [];
+  if(vids.length){
+    const sum = vids.reduce((acc,v)=>acc + (ST.vp[v.id]||0),0);
+    parts.push(sum/vids.length);
+  }
+  if(books.length){
+    const sumb = books.reduce((acc,b)=>acc + ((ST.bp[b.id]||0)/b.ch*100),0);
+    parts.push(sumb/books.length);
+  }
+  if(!parts.length) return 0;
+  return Math.round(parts.reduce((a,c)=>a+c,0)/parts.length);
+}
+
+// ── GAMIFICATION ─────────────────────────────────────────
+function addXP(amt,src=''){
+  const old=lvInfo().lv;
+  ST.xp+=amt;ST.lv=lvInfo().lv;save();
+  toast(`✨ +${amt} XP${src?' — '+src:''}`,'xp');
+  if(ST.lv>old)setTimeout(()=>toast(`🆙 เลเวลอัพ! ตอนนี้ Lv.${ST.lv}`,'lvl'),500);
+  checkBadges();
+  if(tab==='home')renderHome();
+}
+
+function checkBadges(){
+  BDEFS.forEach(b=>{
+    if(!ST.badges.includes(b.id)&&b.f(ST)){
+      ST.badges.push(b.id);save();
+      setTimeout(()=>{toast(`${b.ic} Badge: ${b.n}!`,'badge');showBModal(b);},800);
+    }
+  });
+}
+
+function toast(msg,type='xp'){
+  const c=document.getElementById('toasts');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;el.textContent=msg;
+  c.appendChild(el);setTimeout(()=>el.remove(),3200);
+}
+
+function showBModal(b){
+  const m=document.getElementById('bmodal');
+  m.innerHTML=`<div class="mbox">
+    <div style="font-size:72px;margin-bottom:16px">${b.ic}</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--o);text-transform:uppercase;margin-bottom:8px">Badge ใหม่!</div>
+    <h2 style="font-size:22px;font-weight:800;margin-bottom:8px">${b.n}</h2>
+    <p style="color:var(--t2);margin-bottom:24px">${b.d}</p>
+    <button class="btn bp" onclick="closeBM()">สุดยอด! 🎉</button>
+  </div>`;
+  m.classList.remove('h');
+}
+window.closeBM=()=>document.getElementById('bmodal').classList.add('h');
+
+// ── NAV ───────────────────────────────────────────────────
+let tab='home';
+const NI=[{id:'home',ic:'🏠',l:'หน้าหลัก'},{id:'videos',ic:'▶️',l:'วิดีโอ'},{id:'books',ic:'📖',l:'หนังสือ'},{id:'quiz',ic:'📝',l:'แบบทดสอบ'}];
+
+function renderNav(){
+  document.getElementById('nav').innerHTML=NI.map(i=>`
+    <button class="nb ${tab===i.id?'active':''}" onclick="sw('${i.id}')" id="nb-${i.id}" aria-label="${i.l}">
+      <span class="ni">${i.ic}</span><span>${i.l}</span>
+    </button>`).join('');
+}
+
+function sw(t){tab=t;renderNav();renderTab(t);document.getElementById('main').scrollTop=0;}
+
+function renderTab(t){
+  const f={home:renderHome,videos:renderVideos,books:renderBooks,quiz:renderQuizList};
+  if(f[t])f[t]();
+}
+
+function trigPB(){
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll('.pf[data-t]').forEach(el=>{el.style.width=el.dataset.t+'%';});
+  }));
+}
+
+// ── HOME ──────────────────────────────────────────────────
+function renderHome(){
+  const li=lvInfo();ST.lv=li.lv;
+  const lv=Object.keys(ST.vp).pop();
+  const lv_=lv?VID.find(v=>v.id===lv):null;
+  const sub=lv_?SM[lv_.s]:null;
+  const prog=lv_?(ST.vp[lv_?.id]||0):0;
+
+  let cont=lv_?`
+  <div class="card" style="margin:0 20px 16px;padding:0;overflow:hidden;border:2px solid ${sub.c}40;box-shadow:0 4px 16px ${sub.c}20">
+    <div style="padding:16px;display:flex;align-items:center;gap:12px">
+      <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,${sub.c},${sub.c}AA);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;box-shadow:0 4px 12px ${sub.c}30">${sub.ic}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;color:${sub.c};font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px">${sub.n}</div>
+        <div style="font-size:15px;font-weight:800;color:var(--t1);height:20px" class="marquee"><span class="marquee-text">${lv_.t}</span></div>
+      </div>
+    </div>
+    <div style="padding:0 16px 12px">
+      <div class="pt" style="height:6px;background:var(--bgi);border-radius:99px;overflow:hidden"><div class="pf" data-t="${prog}" style="background:${sub.c};border-radius:99px;height:100%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--t2)">
+        <span>ความคืบหน้า</span><span style="color:${sub.c};font-weight:700">${prog}%</span>
+      </div>
+    </div>
+    <div style="padding:12px 16px;display:flex;gap:8px;border-top:1px solid ${sub.c}20">
+      <button onclick="sw('books');renderBooks()" style="flex:1;background:${sub.c};color:#fff;border:none;border-radius:10px;padding:12px;font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">🎯 เริ่มต้นเรียนรู้</button>
+    </div>
+  </div>`
+  :`<div class="card" style="margin:0 20px 16px;cursor:pointer;text-align:center;padding:24px" onclick="sw('videos')">
+    <div style="font-size:40px;margin-bottom:8px">🚀</div>
+    <div style="font-weight:700;margin-bottom:4px">เริ่มเรียนได้เลย!</div>
+    <div style="color:var(--t2);font-size:14px">แตะเพื่อดูวิดีโอแรก</div>
+  </div>`;
+
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div style="background:linear-gradient(135deg,#534AB7 0%,#7B74D4 55%,#A78BFA 100%);padding:28px 20px 60px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
+      <div style="position:absolute;bottom:-30px;left:30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;position:relative">
+        <div>
+          <div style="color:rgba(255,255,255,.8);font-size:14px;margin-bottom:4px">สวัสดี 👋</div>
+          <h1 style="color:#fff;font-size:24px;font-weight:800">เจ้าหน้าที่</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="background:rgba(255,255,255,.2);border-radius:12px;padding:8px 14px;text-align:center">
+            <div style="font-size:18px">🔥</div>
+            <div style="color:#fff;font-size:12px;font-weight:700">${ST.streak} วัน</div>
+          </div>
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px">😊</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.15);border-radius:14px;padding:14px;position:relative">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="color:#fff"><span style="font-size:13px;opacity:.8">เลเวล </span><span style="font-size:22px;font-weight:800">${li.lv}</span></div>
+          <div style="text-align:right"><span style="color:rgba(255,255,255,.9);font-size:13px;font-weight:600">${ST.xp} XP</span><span style="color:rgba(255,255,255,.6);font-size:12px"> / ${li.lv*500}</span></div>
+        </div>
+        <div style="height:7px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden">
+          <div class="pf" data-t="${li.pct}" style="background:#fff"></div>
+        </div>
+        <div style="color:rgba(255,255,255,.7);font-size:11px;margin-top:6px">อีก ${500-li.inL} XP ถึงเลเวล ${li.lv+1}</div>
+      </div>
+    </div>
+
+    <div style="margin-top:-24px">
+      <div style="padding:0 20px 8px"><div style="font-size:12px;font-weight:700;color:var(--p);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">เกี่ยวกับแอป</div></div>
+      <div style="padding:0 20px 12px">
+        <div class="card" style="padding:14px;">
+          <div style="font-size:15px;font-weight:800;margin-bottom:8px">SurgCare Edu — แอปฝึกทักษะการดูแลผู้ป่วยผ่าตัด</div>
+          <div style="color:var(--t2);font-size:13px;line-height:1.6">
+            แอปนี้มีวัตถุประสงค์เพื่อให้ความรู้และฝึกทักษะที่เกี่ยวข้องกับการผ่าตัดและการดูแลผู้ป่วย ประกอบด้วยเนื้อหาในหัวข้อหลัก: <strong>${SUBS.filter(s=>s.id!=='all').map(s=>s.n).join(' · ')}</strong>.
+            <ul style="margin-top:8px;margin-left:18px;color:var(--t2);font-size:13px;line-height:1.5">
+              <li>รูปแบบการเรียน: วิดีโอแนะนำ, บทความ/หนังสือแยกบท, และแบบทดสอบประเมินความเข้าใจ</li>
+              <li>ฟีเจอร์การเรียนรู้: ติดตามความคืบหน้าเป็นเปอร์เซ็นต์, เก็บ XP และสะสม Badge, บันทึกโน้ต และไฮไลต์เนื้อหา</li>
+              <li>เพื่อใคร: เหมาะสำหรับนักศึกษาแพทย์ พยาบาล และเจ้าหน้าที่ที่เกี่ยวข้องกับการดูแลผู้ป่วยผ่าตัด</li>
+              <li>การจัดการเนื้อหา: ผู้ดูแลสามารถเพิ่ม/แก้ไขวิดีโอ หนังสือ และแบบทดสอบผ่านหน้า Admin</li>
+            </ul>
+            <div style="margin-top:8px;color:var(--t2);font-size:12px">เนื้อหาทั้งหมดถูกจัดเป็นชุดหัวข้อและบท เพื่อให้ผู้เรียนสามารถติดตามและทบทวนได้เป็นขั้นตอน</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:0 20px 8px"><div style="font-size:12px;font-weight:700;color:var(--p);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">กดปุ่มเพื่อเริ่มเรียนได้เลย !</div></div>
+      ${cont}
+    </div>
+    <!-- สถิติสรุปถูกนำออกตามคำขอ (วิดีโอ / แบบทดสอบ / Badge) -->
+
+    <div style="padding:0 20px 8px"><div style="font-size:17px;font-weight:700;margin-bottom:12px">วิชาทั้งหมด</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${SUBS.filter(s=>s.id!=='all').map(s=>`
+          <button onclick="sw('books');renderBooks()" style="background:var(--bgc);border:1px solid var(--br);border-radius:var(--rlg);padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:var(--f);box-shadow:var(--sh);transition:all .2s">
+            <div style="width:40px;height:40px;border-radius:10px;background:${s.c}20;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${s.ic}</div>
+            <div style="text-align:left"><div style="font-size:13px;font-weight:700;color:var(--t1)">${s.n}</div><div style="font-size:11px;color:${s.c}">เปิดหนังสือ →</div></div>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    
+  </div>`;
+  trigPB();
+}
+
+// ── VIDEOS ────────────────────────────────────────────────
+let vf='all';
+window.renderVideos=function(){
+  const fil=vf==='all'?VID:VID.filter(v=>v.s===vf);
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div class="ph"><h1>▶️ วิดีโอ</h1><p>เนื้อหาครบทุกวิชา ดูได้ทุกที่</p></div>
+    <div style="padding:24px 0 0">
+      <div class="mq-wrap">
+        <div class="mq-track">${SUBS.map(s=>`<button class="pill ${vf===s.id?'active':''}" onclick="vf='${s.id}';renderVideos()">${s.ic} ${s.n}</button>`).join('')}</div>
+        <div class="mq-track" aria-hidden="true">${SUBS.map(s=>`<button class="pill ${vf===s.id?'active':''}" onclick="vf='${s.id}';renderVideos()">${s.ic} ${s.n}</button>`).join('')}</div>
+      </div>
+      <div style="padding:0 20px;display:flex;flex-direction:column;gap:12px">
+        ${fil.map(v=>{
+          const sb=SM[v.s];const pg=ST.vp[v.id]||0;
+          const st=pg>=100?'done':pg>0?'watching':'new';
+          const sl={done:'ดูแล้ว ✓',watching:'กำลังดู',new:'ใหม่'}[st];
+          const sc={done:'var(--g)',watching:'var(--o)',new:'var(--p)'}[st];
+          const thumb = v.ytId ? 'https://i.ytimg.com/vi/'+v.ytId+'/hqdefault.jpg' : (v.fileUrl? v.fileUrl : null);
+          return `<div class="card" style="cursor:pointer;padding:0;overflow:hidden;border:2px solid ${sb.c};box-shadow:0 4px 16px ${sb.c}20" onclick="viewVid('${v.id}')">
+            <div style="height:110px;position:relative;overflow:hidden;background:${thumb? 'transparent':'linear-gradient(135deg,'+sb.c+','+sb.c+'88)'};display:flex;align-items:center;justify-content:center">
+              ${thumb && v.ytId ? `<img src="${thumb}" alt="thumb" style="width:100%;height:100%;object-fit:cover;display:block">` : (v.fileUrl ? `<video src="${v.fileUrl}" preload="metadata" muted style="width:100%;height:100%;object-fit:cover;display:block"></video>` : `<div style="font-size:38px;opacity:.3">${sb.ic}</div>`)}
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 6px 20px rgba(0,0,0,.25)">▶️</div></div>
+              <div style="position:absolute;top:10px;left:10px;background:${sc};color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:99px">${sl}</div>
+            </div>
+            <div style="padding:16px">
+              <div style="font-size:11px;color:${sb.c};font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">${sb.ic} ${sb.n}</div>
+              <div style="font-size:15px;font-weight:800;margin-bottom:8px;line-height:1.4;color:var(--t1)">${v.t}</div>
+              ${(v.sd||'')?`<div style="font-size:14px;letter-spacing:.2px;color:var(--t2);line-height:1.6;margin-bottom:${pg>0?'12px':'0'}">${v.sd}</div>`:''}
+              ${pg>0?`<div class="pt" style="height:6px;background:var(--bgi);border-radius:99px"><div class="pf" data-t="${pg}" style="background:${sb.c};border-radius:99px;height:100%"></div></div>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>`;
+  trigPB();
+};
+
+window.viewVid=function(id){
+  const v=VID.find(x=>x.id===id);if(!v)return;
+  const sb=SM[v.s];const pg=ST.vp[id]||0;
+  const rel=VID.filter(x=>x.s===v.s&&x.id!==id).slice(0,3);
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div style="background:linear-gradient(135deg,${sb.c},${sb.c}CC);padding:20px 20px 32px">
+      <button class="bb" onclick="renderVideos()">← กลับ</button>
+      <h1 style="color:#fff;font-size:19px;font-weight:800;line-height:1.3;margin-bottom:6px">${v.t}</h1>
+      <div style="color:rgba(255,255,255,.8);font-size:13px">${sb.ic} ${sb.n}</div>
+    </div>
+    <div style="padding:20px;margin:0;background:#fafafa;border-top:1px solid #e0e0e0">
+      <div style="aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden">
+        ${v.fileUrl ? `<video src="${v.fileUrl}" controls autoplay style="width:100%;height:100%;display:block;"></video>` : `<iframe src="https://www.youtube.com/embed/${v.ytId||v.id}?autoplay=1" frameborder="0" allowfullscreen style="width:100%;height:100%;display:block;"></iframe>`}
+      </div>
+      <div style="height:4px;background:#e0e0e0;margin-top:12px"><div id="vbar" style="height:100%;background:${sb.c};width:${pg}%;transition:width .3s"></div></div>
+      <div style="padding:12px 0;display:flex;align-items:center;justify-content:flex-end">
+        <button onclick="markWatched('${id}')" style="background:${pg>=100?'#ddd':''+sb.c};color:${pg>=100?'#666':'#fff'};border:none;border-radius:99px;padding:10px 20px;font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">
+          ${pg>=100?'✓ ดูแล้ว':'✅ ดูจบแล้ว (+20 XP)'}
+        </button>
+      </div>
+    </div>
+    ${(v.desc||v.d||'')?`<div style="padding:24px 20px;margin:0;background:#fafafa">
+      <h2 style="font-size:17px;font-weight:800;margin-bottom:16px;color:var(--t1)">รายละเอียด</h2>
+      <div class="desc-pre" style="border:3px solid ${sb.c}40;box-shadow:0 4px 12px ${sb.c}14;background:#fafafa">${v.desc||v.d}</div>
+    </div>`:''}
+    ${rel.length?`<div style="padding:20px">
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:12px">วิดีโอถัดไป</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${rel.map(r=>`<div class="crow" style="cursor:pointer" onclick="viewVid('${r.id}')">
+          <div style="width:50px;height:50px;border-radius:10px;background:${sb.c}33;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${sb.ic}</div>
+          <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.t}</div></div>
+          <span style="color:var(--t3);font-size:20px">›</span>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+  </div>`;
+};
+
+window.markWatched=function(id){
+  if((ST.vp[id]||0)>=100){toast('✓ ดูวิดีโอนี้แล้ว','xp');return;}
+  ST.vp[id]=100;ST.vc=Object.values(ST.vp).filter(v=>v>=100).length;save();
+  addXP(20,'ดูวิดีโอ');
+  const bar=document.getElementById('vbar');if(bar)bar.style.width='100%';
+};
+
+// ── BOOKS ─────────────────────────────────────────────────
+window.renderBooks=function(){
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div class="ph"><h1>📖 หนังสือ</h1><p>อ่าน E-Book ทุกวิชา พร้อมบันทึกโน้ต</p></div>
+    <div style="padding:24px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      ${BKS.map(b=>{
+        const done=ST.bp[b.id]||0;const pg=Math.round(done/b.ch*100);const sb=SM[b.s];
+        return `<div class="card" style="cursor:pointer;padding:0;overflow:hidden" onclick="openBook('${b.id}')">
+          <div style="height:100px;background:linear-gradient(135deg,${b.c},${b.c}AA);display:flex;align-items:center;justify-content:center;font-size:36px;position:relative">
+            ${sb.ic}
+            ${pg>=100?`<div style="position:absolute;top:6px;right:6px;background:var(--g);border-radius:99px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700">✓</div>`:''}
+          </div>
+          <div style="padding:12px">
+            <div style="font-size:13px;font-weight:800;margin-bottom:2px;line-height:1.2">${b.t}</div>
+            <div style="font-size:11px;color:var(--t2);margin-bottom:8px">${b.a}</div>
+            <div class="pt" style="height:5px"><div class="pf" data-t="${pg}" style="background:${b.c}"></div></div>
+            <div style="font-size:11px;color:${b.c};font-weight:700;margin-top:4px">${pg}% อ่านแล้ว</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  trigPB();
+};
+
+window.openBook=function(id){
+  const b=BKS.find(x=>x.id===id);if(!b)return;
+  const cur=Math.min((ST.bp[id]||0)+1,b.ch);
+  openCh(id,cur);
+};
+
+function openAdminForChapter(bid,n){
+  // open admin in new tab focused on this book and chapter
+  window.open('/admin?editBook='+encodeURIComponent(bid)+'&chapter='+encodeURIComponent(n),'_blank');
+}
+
+let hlMode=false;
+window.openCh=function(bid,n){
+  const b=BKS.find(x=>x.id===bid);if(!b)return;
+  const sb=SM[b.s];const done=ST.bp[bid]||0;
+  const ck=BKCONTENT[bid+'_'+n]||BKCONTENT.default(b,n);
+  const qset=QS.find(q=>q.s===b.s);const rVid=VID.find(v=>v.s===b.s);
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div style="background:linear-gradient(135deg,${b.c},${b.c}CC);padding:20px 20px 32px">
+      <button class="bb" onclick="renderBooks()">← กลับ</button>
+      <h1 style="color:#fff;font-size:18px;font-weight:800;margin-bottom:4px">${b.t}</h1>
+      <div style="color:rgba(255,255,255,.8);font-size:13px">${sb.ic} บทที่ ${n}</div>
+    </div>
+    <div style="padding:0 20px;margin-top:-12px">
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700">ความคืบหน้า</span>
+          <span style="font-size:13px;color:${b.c};font-weight:700">${done}/${b.ch} บท</span>
+        </div>
+        <div class="pt"><div class="pf" data-t="${Math.round(done/b.ch*100)}" style="background:${b.c}"></div></div>
+        <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+          ${Array.from({length:b.ch},(_,i)=>i+1).map(x=>`
+            <button onclick="openCh('${bid}',${x})" style="width:34px;height:34px;border-radius:8px;background:${x===n?b.c:x<=done?b.c+'33':'var(--bgi)'};color:${x===n?'#fff':x<=done?b.c:'var(--t2)'};border:${x===n?'none':'1.5px solid var(--br)'};font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">${x}</button>
+          `).join('')}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        ${rVid?`<button onclick="viewVid('${rVid.id}')" style="flex:1;padding:10px;border-radius:var(--rmd);background:rgba(29,158,117,.1);color:var(--g);border:1.5px solid rgba(29,158,117,.3);font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer">▶️ วิดีโอ</button>`:''}
+      </div>
+      <div id="rdr" style="font-size:16px;line-height:2.1;letter-spacing:.3px;color:#2c2c2c;margin-bottom:16px;word-break:break-word;hyphens:auto;padding:24px;background:#fafafa;border-radius:16px;border:3px solid ${b.c}40;box-shadow:0 4px 12px ${b.c}14">${ck}</div>
+      ${qset && subjectPct(b.s) >= 100 ? `<button class="btn bgh" style="margin-bottom:10px" onclick="goQuiz('${qset.id}')">📝 ทำแบบทดสอบบทนี้</button>` : ''}
+      ${n<=done?`<button class="btn bg_" style="opacity:.6" disabled>✓ อ่านบทนี้แล้ว</button>`:`<button class="btn bp" onclick="finCh('${bid}',${n})">✅ ครบบทแล้ว (+15 XP)</button>`}
+    </div>
+  </div>`;
+  trigPB();
+};
+
+window.hlBtn=function(){
+  hlMode=!hlMode;
+  const btn=document.getElementById('hlb');const rdr=document.getElementById('rdr');
+  if(btn)btn.style.background=hlMode?'rgba(186,117,23,.3)':'rgba(186,117,23,.1)';
+  if(rdr)rdr.style.userSelect=hlMode?'text':'none';
+  if(hlMode)toast('🖌️ โหมดไฮไลต์เปิดแล้ว เลือกข้อความเพื่อไฮไลต์','xp');
+};
+
+window.openNote=function(){
+  const ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML=`<div class="mbox" style="width:100%">
+    <h3 style="font-size:18px;font-weight:800;margin-bottom:14px">📝 บันทึกโน้ต</h3>
+    <textarea id="nta" style="width:100%;height:110px;border:1.5px solid var(--br);border-radius:12px;padding:12px;font-family:var(--f);font-size:14px;background:var(--bgi);color:var(--t1);resize:none;outline:none" placeholder="พิมพ์โน้ตที่นี่..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn bgh" style="flex:1" onclick="this.closest('.ov').remove()">ยกเลิก</button>
+      <button class="btn bp" style="flex:1" onclick="svNote(this)">💾 บันทึก</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+};
+window.svNote=function(btn){
+  const v=document.getElementById('nta').value;
+  btn.closest('.ov').remove();
+  if(v.trim())toast('💾 บันทึกโน้ตแล้ว!','badge');
+};
+window.finCh=function(bid,n){
+  if((ST.bp[bid]||0)<n){
+    ST.bp[bid]=n;
+    const b=BKS.find(x=>x.id===bid);
+    if(n>=b.ch)ST.bc=Object.keys(ST.bp).filter(k=>ST.bp[k]>=(BKS.find(b=>b.id===k)?.ch||99)).length;
+    save();addXP(15,'อ่านหนังสือ');openCh(bid,n);
+  }
+};
+window.goQuiz=function(qid){tab='quiz';renderNav();beginQuiz(qid);};
+
+// ── QUIZ ──────────────────────────────────────────────────
+window.renderQuizList=function(){
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div class="ph"><h1>📝 แบบทดสอบ</h1><p>วัดความรู้และรับ XP เพิ่ม</p></div>
+    <div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:12px">
+      ${QS.map(q=>{
+        const sb=SM[q.s]||SUBS.find(x=>x.id===q.s)||SUBS[0];const done=ST.qh[q.id];
+        return `<div class="card" style="cursor:pointer" onclick="beginQuiz('${q.id}')">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:52px;height:52px;border-radius:14px;background:${sb.c}22;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${sb.ic}</div>
+            <div style="flex:1">
+              <div style="font-size:12px;color:${sb.c};font-weight:600;margin-bottom:3px">${sb.n}</div>
+              <div style="font-size:16px;font-weight:800">${q.t}</div>
+              <div style="font-size:12px;color:var(--t2);margin-top:3px">${q.n} ข้อ · ${q.tm} วินาที/ข้อ</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              ${done!==undefined?`<div style="font-size:20px;font-weight:800;color:${done>=80?'var(--g)':done>=60?'var(--o)':'var(--r)'}">${done}%</div><div style="font-size:11px;color:var(--t2)">คะแนนล่าสุด</div>`:`<div class="chip cp">ใหม่</div>`}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+      <div class="card" style="background:linear-gradient(135deg,rgba(83,74,183,.08),rgba(83,74,183,.04));text-align:center;padding:20px">
+        <div style="font-size:32px;margin-bottom:8px">💡</div>
+        <div style="font-weight:700;margin-bottom:4px">เคล็ดลับ</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.6">ทำแบบทดสอบบ่อยๆ เพื่อทบทวนความรู้และรับ XP เพิ่ม</div>
+      </div>
+    </div>
+  </div>`;
+};
+
+let QST=null,QTM=null;
+window.beginQuiz=function(qid){
+  const qs=QQ[qid]||[];
+  QST={id:qid,qs,cur:0,ans:[],done:false};
+  renderQQ();
+};
+
+function renderQQ(){
+  clearInterval(QTM);
+  const{qs,cur}=QST;const q=qs[cur];
+  const set=QS.find(x=>x.id===QST.id);let tl=set?set.tm:60;
+  QST.done=false;
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div style="background:linear-gradient(135deg,var(--p),var(--pl));padding:20px 20px 32px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <button class="bb" style="margin-bottom:0" onclick="clearInterval(QTM);renderQuizList()">✕ ออก</button>
+        <div style="color:#fff;font-size:14px;font-weight:700">${cur+1} / ${qs.length}</div>
+      </div>
+      <div style="display:flex;gap:5px">${qs.map((_,i)=>`<div style="flex:1;height:4px;border-radius:99px;background:${i<cur?'rgba(255,255,255,.9)':i===cur?'rgba(255,255,255,.55)':'rgba(255,255,255,.22)'}"></div>`).join('')}</div>
+    </div>
+    <div style="padding:0 20px;margin-top:-12px">
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="chip cp">ข้อที่ ${cur+1}</div>
+          <div style="position:relative;width:40px;height:40px">
+            <svg width="40" height="40" style="position:absolute;top:0;left:0;transform:rotate(-90deg)">
+              <circle cx="20" cy="20" r="16" fill="none" stroke="var(--br)" stroke-width="3"/>
+              <circle id="tc" cx="20" cy="20" r="16" fill="none" stroke="var(--p)" stroke-width="3" stroke-dasharray="100" stroke-dashoffset="0" style="transition:stroke-dashoffset 1s linear"/>
+            </svg>
+            <span id="tt" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--p)">${tl}</span>
+          </div>
+        </div>
+        <p style="font-size:16px;font-weight:700;line-height:1.6">${q.q}</p>
+      </div>
+      <div id="opts" style="display:flex;flex-direction:column;gap:10px">
+        ${q.o.map((opt,i)=>`<button id="o${i}" onclick="ansQ(${i})" style="background:var(--bgc);border:2px solid var(--br);border-radius:var(--rmd);padding:14px 16px;text-align:left;font-family:var(--f);font-size:14px;font-weight:600;color:var(--t1);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;box-shadow:var(--sh)">
+          <div style="width:28px;height:28px;border-radius:8px;background:var(--bgi);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--t2);flex-shrink:0">${['ก','ข','ค','ง'][i]}</div>${opt}
+        </button>`).join('')}
+      </div>
+      <div id="exp" style="display:none;margin-top:14px"></div>
+      <div id="nxt" style="display:none;margin-top:14px"><button class="btn bp" onclick="nxtQ()">${cur+1<qs.length?'ข้อถัดไป →':'ดูผลคะแนน 🎉'}</button></div>
+    </div>
+  </div>`;
+  const tc=document.getElementById('tc');const tt=document.getElementById('tt');
+  QTM=setInterval(()=>{
+    tl--;if(tt)tt.textContent=tl;
+    if(tc)tc.style.strokeDashoffset=((set.tm-tl)/set.tm)*100;
+    if(tl<=10&&tt)tt.style.color='var(--r)';
+    if(tl<=0){clearInterval(QTM);if(!QST.done)ansQ(-1);}
+  },1000);
+}
+
+window.ansQ=function(sel){
+  if(QST.done)return;QST.done=true;clearInterval(QTM);
+  const q=QST.qs[QST.cur];const ok=sel===q.a;
+  QST.ans.push({sel,ok,q});
+  for(let i=0;i<q.o.length;i++){
+    const b=document.getElementById(`o${i}`);if(!b)continue;
+    b.onclick=null;b.style.cursor='default';
+    if(i===q.a){b.style.background='rgba(29,158,117,.12)';b.style.borderColor='var(--g)';b.style.color='var(--g)';if(ok&&i===sel)b.classList.add('ac');}
+    else if(i===sel&&!ok){b.style.background='rgba(229,57,53,.1)';b.style.borderColor='var(--r)';b.style.color='var(--r)';b.classList.add('aw');}
+    else b.style.opacity='.35';
+  }
+  const exp=document.getElementById('exp');
+  if(exp){exp.style.display='block';exp.innerHTML=`<div style="background:${ok?'rgba(29,158,117,.1)':'rgba(229,57,53,.08)'};border:1.5px solid ${ok?'var(--g)':'var(--r)'};border-radius:var(--rmd);padding:16px">
+    <div style="font-size:16px;font-weight:800;margin-bottom:6px;color:${ok?'var(--g)':'var(--r)'}">${ok?'✅ ถูกต้อง! +3 คะแนน':'❌ ไม่ถูกต้อง'}</div>
+    <div style="font-size:14px;color:var(--t1);line-height:1.7">💡 ${q.e}</div>
+  </div>`;}
+  const nxt=document.getElementById('nxt');if(nxt)nxt.style.display='block';
+};
+
+window.nxtQ=function(){
+  QST.cur++;
+  if(QST.cur>=QST.qs.length)showQR();
+  else{renderQQ();document.getElementById('main').scrollTop=0;}
+};
+
+function showQR(){
+  clearInterval(QTM);
+  const{ans,qs,id}=QST;const ok=ans.filter(a=>a.ok).length;const tot=qs.length;
+  const pct=Math.round(ok/tot*100);const sc=pct>=80?'var(--g)':pct>=60?'var(--o)':'var(--r)';
+  ST.qh[id]=pct;ST.qc=Object.keys(ST.qh).length;save();addXP(30,'ทำแบบทดสอบ');
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div style="background:linear-gradient(135deg,var(--p),var(--pl));padding:40px 20px 60px;text-align:center">
+      <div style="font-size:72px;margin-bottom:14px">${pct>=80?'🏆':pct>=60?'👍':'💪'}</div>
+      <h1 style="color:#fff;font-size:26px;font-weight:800;margin-bottom:6px">ผลการทดสอบ</h1>
+      <div style="color:rgba(255,255,255,.8);font-size:14px">${QS.find(q=>q.id===id)?.t}</div>
+    </div>
+    <div style="margin:-30px 20px 0">
+      <div class="card" style="text-align:center;padding:28px">
+        <div style="font-size:60px;font-weight:900;color:${sc};margin-bottom:6px">${pct}%</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:4px">${ok} / ${tot} ข้อถูก</div>
+        <div style="color:var(--t2);font-size:13px;margin-bottom:20px">${pct>=80?'ยอดเยี่ยม!':pct>=60?'ผ่าน! ทบทวนเพิ่มอีกนิด':'ต้องฝึกเพิ่มนะ!'}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="background:rgba(29,158,117,.1);border-radius:12px;padding:14px"><div style="font-size:24px;font-weight:800;color:var(--g)">${ok}</div><div style="font-size:13px;color:var(--t2)">ตอบถูก</div></div>
+          <div style="background:rgba(229,57,53,.1);border-radius:12px;padding:14px"><div style="font-size:24px;font-weight:800;color:var(--r)">${tot-ok}</div><div style="font-size:13px;color:var(--t2)">ตอบผิด</div></div>
+        </div>
+      </div>
+    </div>
+    ${ans.some(a=>!a.ok)?`<div style="padding:20px 20px 0">
+      <h2 style="font-size:16px;font-weight:800;margin-bottom:12px">📋 ข้อที่ตอบผิด</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${ans.filter(a=>!a.ok).map((a,i)=>`<div class="card" style="border-left:3px solid var(--r)">
+          <div style="font-size:13px;font-weight:700;color:var(--r);margin-bottom:6px">ข้อที่ ${qs.indexOf(a.q)+1}</div>
+          <p style="font-size:14px;font-weight:600;margin-bottom:8px">${a.q.q}</p>
+          <div style="font-size:13px;color:var(--g)">✅ เฉลย: ${a.q.o[a.q.a]}</div>
+          <div style="font-size:13px;color:var(--t2);margin-top:6px">💡 ${a.q.e}</div>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+    <div style="padding:20px;display:flex;flex-direction:column;gap:10px">
+      <button class="btn bp" onclick="beginQuiz('${id}')">🔄 ทำอีกครั้ง</button>
+      <button class="btn bgh" onclick="renderQuizList()">← กลับรายการ</button>
+    </div>
+  </div>`;
+}
+
+
+// LEADERBOARD
+window.showLB=function(){
+  const li=lvInfo();
+  document.getElementById('main').innerHTML=`<div class="page">
+    <div class="ph">
+      <button class="bb" onclick="sw('home')">← กลับ</button>
+      <h1>🏆 กระดานคะแนน</h1><p>Top 10 ผู้เรียนประจำสัปดาห์</p>
+    </div>
+    <div style="padding:24px 20px 0">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="background:var(--p);padding:10px 16px;display:grid;grid-template-columns:32px 1fr 60px 44px;gap:8px;align-items:center">
+          ${['#','ชื่อ','XP','Lv.'].map(h=>`<div style="color:rgba(255,255,255,.7);font-size:12px;font-weight:700;${h==='XP'?'text-align:right':h==='Lv.'?'text-align:center':''}">${h}</div>`).join('')}
+        </div>
+        ${LB.map((p,i)=>{
+          const md=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+          return `<div style="padding:12px 16px;display:grid;grid-template-columns:32px 1fr 60px 44px;gap:8px;align-items:center;background:${i%2===0?'transparent':'rgba(83,74,183,.03)'};border-bottom:1px solid var(--br)">
+            <div style="font-size:14px;font-weight:800;color:${i<3?['#FFD700','#C0C0C0','#CD7F32'][i]:'var(--t3)'}">${md||p.r}</div>
+            <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.n}</div>
+            <div style="font-size:13px;font-weight:800;color:var(--p);text-align:right">${p.xp.toLocaleString()}</div>
+            <div style="text-align:center"><span class="chip cp" style="font-size:11px;padding:2px 8px">${p.lv}</span></div>
+          </div>`;
+        }).join('')}
+        <div style="padding:12px 16px;display:grid;grid-template-columns:32px 1fr 60px 44px;gap:8px;align-items:center;background:rgba(83,74,183,.12);border-top:2px solid var(--p)">
+          <div style="font-size:14px;font-weight:800;color:var(--p)">?</div>
+          <div style="font-size:13px;font-weight:800;color:var(--p)">👤 คุณ</div>
+          <div style="font-size:13px;font-weight:800;color:var(--p);text-align:right">${ST.xp}</div>
+          <div style="text-align:center"><span class="chip cp" style="font-size:11px;padding:2px 8px">${li.lv}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+};
+
+// ── INIT ──────────────────────────────────────────────────
+async function init(){
+  await loadConfig();
+  try {
+    const res = await fetch('/api/videos');
+    if(res.ok) VID = await res.json();
+  } catch(e) { console.error('Error loading videos:', e); }
+  renderNav();
+  renderHome();
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
